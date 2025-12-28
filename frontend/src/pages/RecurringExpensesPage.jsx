@@ -58,6 +58,45 @@ const RecurringExpensesPage = () => {
     isActive: true,
   });
 
+  // Validation errors
+  const [formErrors, setFormErrors] = useState({
+    name: "",
+    amount: "",
+    dayOfMonth: "",
+  });
+
+  // Validation functions
+  const validateName = (value) => {
+    if (value && value.length < 2) return "Name must be at least 2 characters";
+    return "";
+  };
+
+  const validateAmount = (value) => {
+    const num = parseFloat(value);
+    if (value && (isNaN(num) || num < 0)) return "Amount cannot be negative";
+    return "";
+  };
+
+  const validateDayOfMonth = (value) => {
+    const num = parseInt(value);
+    if (value && (isNaN(num) || num < 1 || num > 31))
+      return "Day must be between 1 and 31";
+    return "";
+  };
+
+  // Check if form is valid
+  const isFormValid = () => {
+    return (
+      form.name &&
+      form.amount &&
+      form.account &&
+      form.dayOfMonth &&
+      !formErrors.name &&
+      !formErrors.amount &&
+      !formErrors.dayOfMonth
+    );
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -383,20 +422,32 @@ const RecurringExpensesPage = () => {
               fullWidth
               label="Name"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, name: value });
+                setFormErrors({ ...formErrors, name: validateName(value) });
+              }}
               placeholder="e.g., Netflix, Rent, Insurance"
+              error={!!formErrors.name}
+              helperText={formErrors.name}
             />
             <TextField
               fullWidth
               label="Amount"
               type="number"
               value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, amount: value });
+                setFormErrors({ ...formErrors, amount: validateAmount(value) });
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">₹</InputAdornment>
                 ),
               }}
+              error={!!formErrors.amount}
+              helperText={formErrors.amount}
             />
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
@@ -431,10 +482,21 @@ const RecurringExpensesPage = () => {
               label="Day of Month"
               type="number"
               value={form.dayOfMonth}
-              onChange={(e) => setForm({ ...form, dayOfMonth: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, dayOfMonth: value });
+                setFormErrors({
+                  ...formErrors,
+                  dayOfMonth: validateDayOfMonth(value),
+                });
+              }}
               inputProps={{ min: 1, max: 31 }}
               placeholder="1-31"
-              helperText="Enter the day (1-31) when this expense occurs"
+              error={!!formErrors.dayOfMonth}
+              helperText={
+                formErrors.dayOfMonth ||
+                "Enter the day (1-31) when this expense occurs"
+              }
             />
             <TextField
               fullWidth
@@ -454,9 +516,7 @@ const RecurringExpensesPage = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={
-              !form.name || !form.amount || !form.account || !form.dayOfMonth
-            }
+            disabled={!isFormValid()}
           >
             {editingExpense ? "Update" : "Create"}
           </Button>

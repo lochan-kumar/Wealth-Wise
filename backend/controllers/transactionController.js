@@ -95,6 +95,14 @@ const createTransaction = async (req, res) => {
       });
     }
 
+    // Check if expense would make balance negative
+    if ((type === "expense" || !type) && accountDoc.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient balance. Account has ₹${accountDoc.balance.toLocaleString()} but expense is ₹${amount.toLocaleString()}.`,
+      });
+    }
+
     // Auto-detect category if not provided
     const finalCategory =
       category || detectCategory(payee || "", description || "");

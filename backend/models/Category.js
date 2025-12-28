@@ -80,6 +80,7 @@ CategorySchema.statics.getDefaultCategories = function () {
       type: "expense",
     },
     { name: "Education", icon: "School", color: "#8b5cf6", type: "expense" },
+    { name: "Goals", icon: "Flag", color: "#f59e0b", type: "expense" },
     { name: "Salary", icon: "Work", color: "#10b981", type: "income" },
     { name: "Investment", icon: "TrendingUp", color: "#14b8a6", type: "both" },
     {

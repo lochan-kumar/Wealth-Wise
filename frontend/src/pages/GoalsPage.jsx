@@ -56,6 +56,67 @@ const GoalsPage = () => {
     category: "",
   });
 
+  // Validation errors
+  const [formErrors, setFormErrors] = useState({
+    name: "",
+    targetAmount: "",
+    deadline: "",
+  });
+  const [progressError, setProgressError] = useState("");
+
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
+  // Validation functions
+  const validateName = (value) => {
+    if (value && value.length < 2) return "Name must be at least 2 characters";
+    if (value && value.length > 50)
+      return "Name must be less than 50 characters";
+    return "";
+  };
+
+  const validateTargetAmount = (value) => {
+    const num = parseFloat(value);
+    if (value && (isNaN(num) || num <= 0))
+      return "Target amount must be greater than 0";
+    return "";
+  };
+
+  const validateDeadline = (value, isEditing) => {
+    if (value && !isEditing) {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate <= today) return "Deadline must be a future date";
+    }
+    return "";
+  };
+
+  const validateProgressAmount = (value) => {
+    const num = parseFloat(value);
+    if (value && (isNaN(num) || num < 0)) return "Amount cannot be negative";
+    return "";
+  };
+
+  // Check if form is valid
+  const isFormValid = () => {
+    return (
+      form.name &&
+      form.targetAmount &&
+      !formErrors.name &&
+      !formErrors.targetAmount &&
+      !formErrors.deadline
+    );
+  };
+
+  // Check if progress form is valid
+  const isProgressValid = () => {
+    return progressAmount && !progressError;
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -85,6 +146,9 @@ const GoalsPage = () => {
   };
 
   const handleOpenDialog = (goal = null) => {
+    // Clear validation errors
+    setFormErrors({ name: "", targetAmount: "", deadline: "" });
+
     if (goal) {
       setEditingGoal(goal);
       setForm({
@@ -355,30 +419,56 @@ const GoalsPage = () => {
               fullWidth
               label="Goal Name"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, name: value });
+                setFormErrors({ ...formErrors, name: validateName(value) });
+              }}
               placeholder="e.g., Vacation Fund, New Car"
+              error={!!formErrors.name}
+              helperText={formErrors.name}
             />
             <TextField
               fullWidth
               label="Target Amount"
               type="number"
               value={form.targetAmount}
-              onChange={(e) =>
-                setForm({ ...form, targetAmount: e.target.value })
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, targetAmount: value });
+                setFormErrors({
+                  ...formErrors,
+                  targetAmount: validateTargetAmount(value),
+                });
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">₹</InputAdornment>
                 ),
               }}
+              error={!!formErrors.targetAmount}
+              helperText={formErrors.targetAmount}
             />
             <TextField
               fullWidth
               type="date"
               label="Deadline"
               value={form.deadline}
-              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, deadline: value });
+                setFormErrors({
+                  ...formErrors,
+                  deadline: validateDeadline(value, !!editingGoal),
+                });
+              }}
               InputLabelProps={{ shrink: true }}
+              inputProps={{ min: getTodayDate() }}
+              error={!!formErrors.deadline}
+              helperText={
+                formErrors.deadline ||
+                (!editingGoal ? "Must be a future date" : "")
+              }
             />
             <TextField
               fullWidth
@@ -391,7 +481,11 @@ const GoalsPage = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={!isFormValid()}
+          >
             {editingGoal ? "Update" : "Create"}
           </Button>
         </DialogActions>
@@ -412,12 +506,18 @@ const GoalsPage = () => {
               label="Amount to Add"
               type="number"
               value={progressAmount}
-              onChange={(e) => setProgressAmount(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setProgressAmount(value);
+                setProgressError(validateProgressAmount(value));
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">₹</InputAdornment>
                 ),
               }}
+              error={!!progressError}
+              helperText={progressError}
             />
             <FormControl fullWidth>
               <InputLabel>Deduct from Account</InputLabel>
@@ -447,7 +547,7 @@ const GoalsPage = () => {
           <Button
             variant="contained"
             onClick={handleAddProgress}
-            disabled={!progressAmount}
+            disabled={!isProgressValid()}
           >
             Add Progress
           </Button>

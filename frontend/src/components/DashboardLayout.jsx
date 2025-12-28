@@ -29,6 +29,7 @@ import {
   InputLabel,
   Select,
   InputAdornment,
+  alpha,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -176,6 +177,8 @@ const DashboardLayout = () => {
     navigate("/");
   };
 
+  const isDark = theme.palette.mode === "dark";
+
   const drawer = (
     <Box
       sx={{
@@ -185,15 +188,71 @@ const DashboardLayout = () => {
       }}
     >
       <Toolbar>
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: 700, color: "primary.main", cursor: "pointer" }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            cursor: "pointer",
+            transition: "transform 0.2s",
+            "&:hover": {
+              transform: "scale(1.02)",
+            },
+          }}
           onClick={() => navigate("/")}
         >
-          💰 WealthWise
-        </Typography>
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              borderRadius: 1.5,
+              background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4)",
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 512 512"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M256 128L360 216L256 400L152 216L256 128Z"
+                fill="black"
+                fillOpacity="0.2"
+              />
+              <path
+                d="M256 148L340 226L256 380L172 226L256 148Z"
+                fill="black"
+              />
+              <path d="M256 148L340 226L256 266L256 148Z" fill="#78350F" />
+              <path d="M172 226L256 148L256 266L172 226Z" fill="#92400E" />
+            </svg>
+          </Box>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              letterSpacing: "-0.5px",
+            }}
+          >
+            WealthWise
+          </Typography>
+        </Box>
       </Toolbar>
-      <Divider />
+      <Divider
+        sx={{
+          borderColor: isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.1),
+        }}
+      />
       <List sx={{ flex: 1, px: 2, py: 1 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
@@ -205,6 +264,15 @@ const DashboardLayout = () => {
               }}
               sx={{
                 borderRadius: 2,
+                color: isDark ? "#f8fafc" : "#334155",
+                "& .MuiListItemIcon-root": {
+                  color: isDark ? "#94a3b8" : "#64748b",
+                },
+                "&:hover": {
+                  bgcolor: isDark
+                    ? alpha("#ffffff", 0.1)
+                    : alpha("#000000", 0.05),
+                },
                 "&.Mui-selected": {
                   bgcolor: "primary.main",
                   color: "white",
@@ -219,9 +287,25 @@ const DashboardLayout = () => {
           </ListItem>
         ))}
       </List>
-      <Divider />
+      <Divider
+        sx={{
+          borderColor: isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.1),
+        }}
+      />
       <Box sx={{ p: 2 }}>
-        <ListItemButton onClick={toggleTheme} sx={{ borderRadius: 2 }}>
+        <ListItemButton
+          onClick={toggleTheme}
+          sx={{
+            borderRadius: 2,
+            color: isDark ? "#f8fafc" : "#334155",
+            "& .MuiListItemIcon-root": {
+              color: isDark ? "#94a3b8" : "#64748b",
+            },
+            "&:hover": {
+              bgcolor: isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.05),
+            },
+          }}
+        >
           <ListItemIcon sx={{ minWidth: 40 }}>
             {mode === "dark" ? <LightMode /> : <DarkMode />}
           </ListItemIcon>
@@ -234,17 +318,98 @@ const DashboardLayout = () => {
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Gradient Background */}
+      <Box
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: -1,
+          background: isDark
+            ? "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)"
+            : "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: "-50%",
+            left: "-50%",
+            width: "200%",
+            height: "200%",
+            background: isDark
+              ? "radial-gradient(ellipse at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(147, 51, 234, 0.15) 0%, transparent 50%)"
+              : "radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(147, 51, 234, 0.08) 0%, transparent 50%)",
+            animation: "pulse 15s ease-in-out infinite",
+          },
+          "@keyframes pulse": {
+            "0%, 100%": { transform: "translate(0, 0)" },
+            "50%": { transform: "translate(-5%, -5%)" },
+          },
+        }}
+      />
+
+      {/* Floating Orbs */}
+      <Box
+        sx={{
+          position: "fixed",
+          top: "10%",
+          right: "10%",
+          width: 300,
+          height: 300,
+          borderRadius: "50%",
+          background: isDark
+            ? "radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)",
+          filter: "blur(20px)",
+          animation: "float 8s ease-in-out infinite",
+          zIndex: 0,
+          pointerEvents: "none",
+          "@keyframes float": {
+            "0%, 100%": { transform: "translateY(0)" },
+            "50%": { transform: "translateY(-30px)" },
+          },
+        }}
+      />
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: "20%",
+          left: "30%",
+          width: 200,
+          height: 200,
+          borderRadius: "50%",
+          background: isDark
+            ? "radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%)",
+          filter: "blur(15px)",
+          animation: "float 10s ease-in-out infinite reverse",
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      />
+
       <AppBar
         position="fixed"
         elevation={0}
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          bgcolor: "background.paper",
-          color: "text.primary",
-          borderBottom: "1px solid",
-          borderColor: "divider",
+          bgcolor: isDark ? alpha("#1e293b", 0.8) : alpha("#ffffff", 0.85),
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          color: isDark ? "#f8fafc" : "#1e293b",
+          borderBottom: `1px solid ${
+            isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.08)
+          }`,
           borderRadius: 0,
         }}
       >
@@ -317,7 +482,16 @@ const DashboardLayout = () => {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": { width: drawerWidth, borderRadius: 0 },
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              borderRadius: 0,
+              bgcolor: isDark ? alpha("#1e293b", 0.95) : alpha("#ffffff", 0.95),
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              borderRight: `1px solid ${
+                isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.08)
+              }`,
+            },
           }}
         >
           {drawer}
@@ -328,9 +502,13 @@ const DashboardLayout = () => {
             display: { xs: "none", md: "block" },
             "& .MuiDrawer-paper": {
               width: drawerWidth,
-              borderRight: "1px solid",
-              borderColor: "divider",
               borderRadius: 0,
+              bgcolor: isDark ? alpha("#1e293b", 0.8) : alpha("#ffffff", 0.85),
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              borderRight: `1px solid ${
+                isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.08)
+              }`,
             },
           }}
           open
@@ -346,8 +524,10 @@ const DashboardLayout = () => {
           p: 3,
           width: { md: `calc(100% - ${drawerWidth}px)` },
           mt: 8,
-          bgcolor: "background.default",
+          bgcolor: "transparent",
           minHeight: "calc(100vh - 64px)",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Outlet />

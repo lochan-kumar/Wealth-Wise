@@ -150,6 +150,14 @@ const addDebtTransaction = async (req, res) => {
         });
       }
 
+      // Check balance for outgoing transactions (lent, repaid)
+      if ((type === "lent" || type === "repaid") && account.balance < amount) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient balance. Account has ₹${account.balance.toLocaleString()} but transaction is ₹${amount.toLocaleString()}.`,
+        });
+      }
+
       // Determine transaction type and description
       let transactionType, transactionDescription, balanceChange;
 

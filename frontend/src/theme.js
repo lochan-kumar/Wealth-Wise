@@ -40,24 +40,24 @@ export const lightTheme = createTheme({
       dark: "#b45309",
     },
     background: {
-      default: "#f1f5f9",
-      paper: "#f8fafc",
+      default: "transparent",
+      paper: "rgba(255, 255, 255, 0.85)",
     },
     text: {
       primary: "#1e293b",
       secondary: "#64748b",
     },
-    divider: "#e2e8f0",
+    divider: "rgba(0, 0, 0, 0.1)",
   },
   typography: {
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    h1: { fontWeight: 700, color: "#111827" },
-    h2: { fontWeight: 700, color: "#111827" },
-    h3: { fontWeight: 600, color: "#111827" },
-    h4: { fontWeight: 600, color: "#111827" },
-    h5: { fontWeight: 600, color: "#111827" },
-    h6: { fontWeight: 600, color: "#111827" },
+    h1: { fontWeight: 700, color: "#1e293b" },
+    h2: { fontWeight: 700, color: "#1e293b" },
+    h3: { fontWeight: 600, color: "#1e293b" },
+    h4: { fontWeight: 600, color: "#1e293b" },
+    h5: { fontWeight: 600, color: "#1e293b" },
+    h6: { fontWeight: 600, color: "#1e293b" },
     button: { fontWeight: 600, textTransform: "none" },
   },
   shape: {
@@ -99,25 +99,29 @@ export const lightTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          backgroundColor: "#ffffff",
-          border: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
+          borderRadius: 16,
+          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(0, 0, 0, 0.08)",
+          boxShadow: "0 4px 20px 0 rgba(0, 0, 0, 0.05)",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          backgroundColor: "#ffffff",
+          borderRadius: 12,
+          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
         },
         elevation0: {
           boxShadow: "none",
         },
         elevation1: {
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
-          border: "1px solid #e5e7eb",
+          boxShadow: "0 4px 20px 0 rgba(0, 0, 0, 0.05)",
+          border: "1px solid rgba(0, 0, 0, 0.08)",
         },
       },
     },
@@ -171,16 +175,24 @@ export const lightTheme = createTheme({
         root: {
           "& .MuiOutlinedInput-root": {
             borderRadius: 8,
+            color: "#1e293b",
             "& fieldset": {
-              borderColor: "#d1d5db",
+              borderColor: "rgba(0, 0, 0, 0.2)",
               borderWidth: 1,
             },
             "&:hover fieldset": {
-              borderColor: "#9ca3af",
+              borderColor: "rgba(0, 0, 0, 0.3)",
             },
             "&.Mui-focused fieldset": {
               borderWidth: 2,
+              borderColor: "#2563eb",
             },
+          },
+          "& .MuiInputLabel-root": {
+            color: "#64748b",
+          },
+          "& .MuiInputLabel-root.Mui-focused": {
+            color: "#2563eb",
           },
         },
       },
@@ -189,11 +201,28 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 8,
+          color: "#1e293b",
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#d1d5db",
+            borderColor: "rgba(0, 0, 0, 0.2)",
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#9ca3af",
+            borderColor: "rgba(0, 0, 0, 0.3)",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#2563eb",
+          },
+        },
+        icon: {
+          color: "#64748b",
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          color: "#64748b",
+          "&.Mui-focused": {
+            color: "#2563eb",
           },
         },
       },
@@ -203,7 +232,7 @@ export const lightTheme = createTheme({
         root: {
           borderRadius: 4,
           height: 6,
-          backgroundColor: "#e5e7eb",
+          backgroundColor: "rgba(0, 0, 0, 0.1)",
         },
       },
     },
@@ -213,7 +242,7 @@ export const lightTheme = createTheme({
           borderRadius: 8,
           margin: "2px 0",
           "&:hover": {
-            backgroundColor: "#f3f4f6",
+            backgroundColor: "rgba(0, 0, 0, 0.04)",
           },
           "&.Mui-selected": {
             backgroundColor: colors.primary,
@@ -232,11 +261,12 @@ export const lightTheme = createTheme({
       styleOverrides: {
         head: {
           fontWeight: 600,
-          backgroundColor: "#f9fafb",
+          backgroundColor: "rgba(0, 0, 0, 0.03)",
           color: "#374151",
         },
         root: {
-          borderColor: "#e5e7eb",
+          borderColor: "rgba(0, 0, 0, 0.08)",
+          color: "#1e293b",
         },
       },
     },
@@ -244,7 +274,7 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           "&:hover": {
-            backgroundColor: "#f9fafb",
+            backgroundColor: "rgba(0, 0, 0, 0.02)",
           },
         },
       },
@@ -350,25 +380,29 @@ export const darkTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          backgroundColor: "#1e293b",
-          border: "1px solid #334155",
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.2)",
+          borderRadius: 16,
+          backgroundColor: "rgba(30, 41, 59, 0.7)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          backgroundColor: "#1e293b",
+          borderRadius: 12,
+          backgroundColor: "rgba(30, 41, 59, 0.7)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
         },
         elevation0: {
           boxShadow: "none",
         },
         elevation1: {
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.2)",
-          border: "1px solid #334155",
+          boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
         },
       },
     },

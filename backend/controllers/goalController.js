@@ -164,6 +164,14 @@ const updateProgress = async (req, res) => {
         });
       }
 
+      // Check if would make balance negative
+      if (accountDoc.balance < amount) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient balance. Account has ₹${accountDoc.balance.toLocaleString()} but goal contribution is ₹${amount.toLocaleString()}.`,
+        });
+      }
+
       // Create the expense transaction
       transaction = await Transaction.create({
         user: req.user.id,
@@ -171,7 +179,7 @@ const updateProgress = async (req, res) => {
         type: "expense",
         amount: amount,
         description: `Savings towards goal: ${goal.name}`,
-        category: "Investment",
+        category: "Goals",
         payee: `Goal: ${goal.name}`,
         date: new Date(),
         source: "manual",

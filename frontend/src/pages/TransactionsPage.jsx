@@ -75,6 +75,19 @@ const TransactionsPage = () => {
     date: getISTDateTime(),
   });
 
+  // Validation error state
+  const [amountError, setAmountError] = useState("");
+
+  // Validation function
+  const validateAmount = (value) => {
+    const num = parseFloat(value);
+    if (value && (isNaN(num) || num < 0)) return "Amount cannot be negative";
+    return "";
+  };
+
+  // Check if form is valid
+  const isFormValid = form.account && form.amount && !amountError;
+
   useEffect(() => {
     fetchData();
   }, [filters]);
@@ -415,10 +428,21 @@ const TransactionsPage = () => {
               >
                 {accounts.map((acc) => (
                   <MenuItem key={acc._id} value={acc._id}>
-                    {acc.name}
+                    {acc.name} (₹{(acc.balance || 0).toLocaleString()})
                   </MenuItem>
                 ))}
               </Select>
+              {form.account && (
+                <Typography
+                  variant="caption"
+                  sx={{ mt: 0.5, color: "success.main" }}
+                >
+                  Balance: ₹
+                  {(
+                    accounts.find((a) => a._id === form.account)?.balance || 0
+                  ).toLocaleString()}
+                </Typography>
+              )}
             </FormControl>
             <FormControl fullWidth>
               <InputLabel>Type</InputLabel>
@@ -436,12 +460,18 @@ const TransactionsPage = () => {
               label="Amount"
               type="number"
               value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, amount: value });
+                setAmountError(validateAmount(value));
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">₹</InputAdornment>
                 ),
               }}
+              error={!!amountError}
+              helperText={amountError}
             />
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
@@ -492,7 +522,11 @@ const TransactionsPage = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={!isFormValid}
+          >
             {editingTx ? "Update" : "Add"}
           </Button>
         </DialogActions>

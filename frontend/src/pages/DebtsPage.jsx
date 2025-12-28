@@ -111,6 +111,37 @@ const DebtsPage = () => {
     accountId: "",
   });
 
+  // Validation errors
+  const [personErrors, setPersonErrors] = useState({
+    name: "",
+    phone: "",
+  });
+  const [txAmountError, setTxAmountError] = useState("");
+
+  // Validation functions
+  const validatePersonName = (value) => {
+    if (value && value.length < 2) return "Name must be at least 2 characters";
+    if (value && value.length > 50)
+      return "Name must be less than 50 characters";
+    return "";
+  };
+
+  const validatePhone = (value) => {
+    if (value && !/^\d{10}$/.test(value)) return "Phone must be 10 digits";
+    return "";
+  };
+
+  const validateTxAmount = (value) => {
+    const num = parseFloat(value);
+    if (value && (isNaN(num) || num < 0)) return "Amount cannot be negative";
+    return "";
+  };
+
+  // Form validity checks
+  const isPersonFormValid =
+    personForm.name && !personErrors.name && !personErrors.phone;
+  const isTxFormValid = transactionForm.amount && !txAmountError;
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -573,19 +604,33 @@ const DebtsPage = () => {
               fullWidth
               label="Name"
               value={personForm.name}
-              onChange={(e) =>
-                setPersonForm({ ...personForm, name: e.target.value })
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                setPersonForm({ ...personForm, name: value });
+                setPersonErrors({
+                  ...personErrors,
+                  name: validatePersonName(value),
+                });
+              }}
               placeholder="e.g., NKS, John Doe"
+              error={!!personErrors.name}
+              helperText={personErrors.name}
             />
             <TextField
               fullWidth
               label="Phone (Optional)"
               value={personForm.phone}
-              onChange={(e) =>
-                setPersonForm({ ...personForm, phone: e.target.value })
-              }
-              placeholder="For reference"
+              onChange={(e) => {
+                const value = e.target.value;
+                setPersonForm({ ...personForm, phone: value });
+                setPersonErrors({
+                  ...personErrors,
+                  phone: validatePhone(value),
+                });
+              }}
+              placeholder="10 digit number"
+              error={!!personErrors.phone}
+              helperText={personErrors.phone}
             />
             <TextField
               fullWidth
@@ -605,7 +650,7 @@ const DebtsPage = () => {
           <Button
             variant="contained"
             onClick={handleSavePerson}
-            disabled={!personForm.name}
+            disabled={!isPersonFormValid}
           >
             {editingPerson ? "Update" : "Add"}
           </Button>
@@ -654,17 +699,21 @@ const DebtsPage = () => {
               label="Amount"
               type="number"
               value={transactionForm.amount}
-              onChange={(e) =>
+              onChange={(e) => {
+                const value = e.target.value;
                 setTransactionForm({
                   ...transactionForm,
-                  amount: e.target.value,
-                })
-              }
+                  amount: value,
+                });
+                setTxAmountError(validateTxAmount(value));
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">₹</InputAdornment>
                 ),
               }}
+              error={!!txAmountError}
+              helperText={txAmountError}
             />
             <TextField
               fullWidth
@@ -713,7 +762,7 @@ const DebtsPage = () => {
           <Button
             variant="contained"
             onClick={handleAddTransaction}
-            disabled={!transactionForm.amount}
+            disabled={!isTxFormValid}
           >
             Add Transaction
           </Button>

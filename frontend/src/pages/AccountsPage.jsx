@@ -57,6 +57,21 @@ const AccountsPage = () => {
     accountNumber: "",
   });
 
+  // Validation error
+  const [accountError, setAccountError] = useState("");
+
+  // Validation function
+  const validateAccountNumber = (value) => {
+    if (value && !/^\d+$/.test(value))
+      return "Account number must contain only digits";
+    if (value && value.length < 8)
+      return "Account number must be at least 8 digits";
+    return "";
+  };
+
+  // Check if form is valid
+  const isFormValid = form.bankName && form.accountNumber && !accountError;
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -174,10 +189,21 @@ const AccountsPage = () => {
                   >
                     <AccountBalance fontSize="large" />
                   </Box>
-                  <Box>
+                  <Box sx={{ flex: 1 }}>
                     <Typography variant="h6">{cashAccount.name}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       For cash transactions • Cannot be deleted
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: "right" }}>
+                    <Typography
+                      variant="h5"
+                      sx={{ fontWeight: 600, color: "success.main" }}
+                    >
+                      ₹{(cashAccount.balance || 0).toLocaleString()}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Balance
                     </Typography>
                   </Box>
                 </Box>
@@ -222,6 +248,12 @@ const AccountsPage = () => {
                           primary={account.name}
                           secondary={account.bankName}
                         />
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: "success.main", mr: 2 }}
+                        >
+                          ₹{(account.balance || 0).toLocaleString()}
+                        </Typography>
                         <ListItemSecondaryAction>
                           <IconButton
                             edge="end"
@@ -282,10 +314,14 @@ const AccountsPage = () => {
               fullWidth
               label="Account Number"
               value={form.accountNumber}
-              onChange={(e) =>
-                setForm({ ...form, accountNumber: e.target.value })
-              }
-              placeholder="Enter your account number"
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, accountNumber: value });
+                setAccountError(validateAccountNumber(value));
+              }}
+              placeholder="Enter your account number (min 8 digits)"
+              error={!!accountError}
+              helperText={accountError}
             />
             <Alert severity="info" sx={{ mt: 1 }}>
               This is a simulation. Enter any account number to link and import
@@ -298,7 +334,7 @@ const AccountsPage = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!form.bankName || !form.accountNumber}
+            disabled={!isFormValid}
           >
             Link Account
           </Button>

@@ -57,6 +57,36 @@ const ProfilePage = () => {
     confirmPassword: "",
   });
 
+  // Password validation errors
+  const [passwordErrors, setPasswordErrors] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  // Password validation regex
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  const validateNewPassword = (value) => {
+    if (value && !passwordRegex.test(value)) {
+      return "8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special";
+    }
+    return "";
+  };
+
+  const validateConfirmPassword = (value, newPwd) => {
+    if (value && value !== newPwd) return "Passwords do not match";
+    return "";
+  };
+
+  const isPasswordFormValid =
+    passwordForm.currentPassword &&
+    passwordForm.newPassword &&
+    passwordForm.confirmPassword &&
+    !passwordErrors.newPassword &&
+    !passwordErrors.confirmPassword &&
+    passwordForm.newPassword === passwordForm.confirmPassword;
+
   // Export form
   const [exportForm, setExportForm] = useState({
     format: "excel",
@@ -257,34 +287,57 @@ const ProfilePage = () => {
                   type="password"
                   label="New Password"
                   value={passwordForm.newPassword}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.target.value;
                     setPasswordForm({
                       ...passwordForm,
-                      newPassword: e.target.value,
-                    })
-                  }
+                      newPassword: value,
+                    });
+                    setPasswordErrors({
+                      ...passwordErrors,
+                      newPassword: validateNewPassword(value),
+                      confirmPassword: validateConfirmPassword(
+                        passwordForm.confirmPassword,
+                        value
+                      ),
+                    });
+                  }}
                   sx={{ mb: 2 }}
                   required
-                  helperText="Minimum 6 characters"
+                  error={!!passwordErrors.newPassword}
+                  helperText={
+                    passwordErrors.newPassword ||
+                    "8+ chars, 1 upper, 1 lower, 1 number, 1 special"
+                  }
                 />
                 <TextField
                   fullWidth
                   type="password"
                   label="Confirm New Password"
                   value={passwordForm.confirmPassword}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.target.value;
                     setPasswordForm({
                       ...passwordForm,
-                      confirmPassword: e.target.value,
-                    })
-                  }
+                      confirmPassword: value,
+                    });
+                    setPasswordErrors({
+                      ...passwordErrors,
+                      confirmPassword: validateConfirmPassword(
+                        value,
+                        passwordForm.newPassword
+                      ),
+                    });
+                  }}
                   sx={{ mb: 2 }}
                   required
+                  error={!!passwordErrors.confirmPassword}
+                  helperText={passwordErrors.confirmPassword}
                 />
                 <Button
                   type="submit"
                   variant="contained"
-                  disabled={loading}
+                  disabled={loading || !isPasswordFormValid}
                   startIcon={
                     loading ? <CircularProgress size={20} /> : <Lock />
                   }

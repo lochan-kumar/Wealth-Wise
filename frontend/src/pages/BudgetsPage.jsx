@@ -72,6 +72,36 @@ const BudgetsPage = () => {
     hasLimit: false,
   });
 
+  // Validation errors
+  const [formErrors, setFormErrors] = useState({
+    name: "",
+    budgetLimit: "",
+  });
+
+  // Validation functions
+  const validateName = (value) => {
+    if (value && value.length < 2) return "Name must be at least 2 characters";
+    if (value && value.length > 50)
+      return "Name must be less than 50 characters";
+    return "";
+  };
+
+  const validateBudgetLimit = (value) => {
+    const num = parseFloat(value);
+    if (value && (isNaN(num) || num < 0))
+      return "Budget limit cannot be negative";
+    return "";
+  };
+
+  // Check if form is valid
+  const isFormValid = () => {
+    return (
+      form.name &&
+      !formErrors.name &&
+      (!form.hasLimit || (form.budgetLimit && !formErrors.budgetLimit))
+    );
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -404,9 +434,15 @@ const BudgetsPage = () => {
               fullWidth
               label="Category Name"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm({ ...form, name: value });
+                setFormErrors({ ...formErrors, name: validateName(value) });
+              }}
               placeholder="e.g., Groceries, Rent, Subscriptions"
               disabled={editingCategory?.name === "Other"}
+              error={!!formErrors.name}
+              helperText={formErrors.name}
             />
 
             <Box>
@@ -466,15 +502,24 @@ const BudgetsPage = () => {
                 label="Monthly Budget Limit"
                 type="number"
                 value={form.budgetLimit}
-                onChange={(e) =>
-                  setForm({ ...form, budgetLimit: e.target.value })
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setForm({ ...form, budgetLimit: value });
+                  setFormErrors({
+                    ...formErrors,
+                    budgetLimit: validateBudgetLimit(value),
+                  });
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">₹</InputAdornment>
                   ),
                 }}
-                helperText="You'll be alerted when spending approaches this limit"
+                error={!!formErrors.budgetLimit}
+                helperText={
+                  formErrors.budgetLimit ||
+                  "You'll be alerted when spending approaches this limit"
+                }
               />
             )}
           </Box>
@@ -484,7 +529,7 @@ const BudgetsPage = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!form.name}
+            disabled={!isFormValid()}
           >
             {editingCategory ? "Update" : "Create"}
           </Button>
