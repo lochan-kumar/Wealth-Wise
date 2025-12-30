@@ -89,8 +89,8 @@ const LoginPage = () => {
           bottom: 0,
           zIndex: -1,
           background: isDark
-            ? "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)"
-            : "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
+            ? "linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)"
+            : "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f8fafc 100%)",
         }}
       />
       {/* Floating Orbs */}
@@ -103,8 +103,8 @@ const LoginPage = () => {
           height: 200,
           borderRadius: "50%",
           background: isDark
-            ? "radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)",
+            ? "radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, transparent 70%)",
           filter: "blur(20px)",
           zIndex: 0,
           pointerEvents: "none",

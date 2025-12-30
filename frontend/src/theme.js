@@ -1,12 +1,13 @@
 import { createTheme, alpha } from "@mui/material/styles";
 
-// Professional color palette - clean and trustworthy
+// Professional color palette - Emerald + Gold + Slate
 const colors = {
-  primary: "#1a56db", // Deep professional blue
-  secondary: "#6b7280", // Neutral gray
-  success: "#059669", // Confident green
+  primary: "#059669", // Emerald green - trust, growth, prosperity
+  secondary: "#475569", // Slate gray - professionalism
+  success: "#22c55e", // Bright green
   error: "#dc2626", // Clear red
-  warning: "#d97706", // Warm amber
+  warning: "#f59e0b", // Amber gold
+  accent: "#f59e0b", // Gold accent for branding
 };
 
 // Light theme - Clean, minimal, professional
@@ -15,14 +16,14 @@ export const lightTheme = createTheme({
     mode: "light",
     primary: {
       main: colors.primary,
-      light: "#3b82f6",
-      dark: "#1e40af",
+      light: "#10b981",
+      dark: "#047857",
       contrastText: "#ffffff",
     },
     secondary: {
       main: colors.secondary,
-      light: "#9ca3af",
-      dark: "#4b5563",
+      light: "#64748b",
+      dark: "#334155",
     },
     success: {
       main: colors.success,
@@ -41,7 +42,7 @@ export const lightTheme = createTheme({
     },
     background: {
       default: "transparent",
-      paper: "rgba(255, 255, 255, 0.85)",
+      paper: "rgba(240, 253, 244, 0.85)",
     },
     text: {
       primary: "#1e293b",
@@ -100,11 +101,12 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 16,
-          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          background:
+            "linear-gradient(135deg, rgba(240, 253, 244, 0.9) 0%, rgba(236, 253, 245, 0.85) 100%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(0, 0, 0, 0.08)",
-          boxShadow: "0 4px 20px 0 rgba(0, 0, 0, 0.05)",
+          border: "1px solid rgba(5, 150, 105, 0.25)",
+          boxShadow: "0 4px 20px 0 rgba(5, 150, 105, 0.08)",
         },
       },
     },
@@ -112,7 +114,8 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          background:
+            "linear-gradient(135deg, rgba(240, 253, 244, 0.9) 0%, rgba(236, 253, 245, 0.85) 100%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
         },
@@ -120,26 +123,29 @@ export const lightTheme = createTheme({
           boxShadow: "none",
         },
         elevation1: {
-          boxShadow: "0 4px 20px 0 rgba(0, 0, 0, 0.05)",
-          border: "1px solid rgba(0, 0, 0, 0.08)",
+          boxShadow: "0 4px 20px 0 rgba(5, 150, 105, 0.08)",
+          border: "1px solid rgba(5, 150, 105, 0.25)",
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: "#ffffff",
+          backgroundColor: "rgba(240, 253, 244, 0.95)",
           color: "#111827",
           boxShadow: "none",
-          borderBottom: "1px solid #e5e7eb",
+          borderBottom: "1px solid rgba(5, 150, 105, 0.1)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
         },
       },
     },
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: "#ffffff",
-          borderRight: "1px solid #e5e7eb",
+          background:
+            "linear-gradient(180deg, rgba(240, 253, 244, 0.98) 0%, rgba(236, 253, 245, 0.95) 100%)",
+          borderRight: "1px solid rgba(5, 150, 105, 0.1)",
         },
       },
     },
@@ -185,14 +191,14 @@ export const lightTheme = createTheme({
             },
             "&.Mui-focused fieldset": {
               borderWidth: 2,
-              borderColor: "#2563eb",
+              borderColor: "#059669",
             },
           },
           "& .MuiInputLabel-root": {
             color: "#64748b",
           },
           "& .MuiInputLabel-root.Mui-focused": {
-            color: "#2563eb",
+            color: "#059669",
           },
         },
       },
@@ -209,7 +215,7 @@ export const lightTheme = createTheme({
             borderColor: "rgba(0, 0, 0, 0.3)",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#2563eb",
+            borderColor: "#059669",
           },
         },
         icon: {
@@ -222,7 +228,7 @@ export const lightTheme = createTheme({
         root: {
           color: "#64748b",
           "&.Mui-focused": {
-            color: "#2563eb",
+            color: "#059669",
           },
         },
       },
@@ -248,7 +254,7 @@ export const lightTheme = createTheme({
             backgroundColor: colors.primary,
             color: "#ffffff",
             "&:hover": {
-              backgroundColor: "#1e40af",
+              backgroundColor: "#047857",
             },
             "& .MuiListItemIcon-root": {
               color: "#ffffff",
@@ -295,15 +301,15 @@ export const darkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#3b82f6",
-      light: "#60a5fa",
-      dark: "#2563eb",
+      main: "#10b981",
+      light: "#34d399",
+      dark: "#059669",
       contrastText: "#ffffff",
     },
     secondary: {
-      main: "#9ca3af",
-      light: "#d1d5db",
-      dark: "#6b7280",
+      main: "#94a3b8",
+      light: "#cbd5e1",
+      dark: "#64748b",
     },
     success: {
       main: "#10b981",
@@ -472,7 +478,7 @@ export const darkTheme = createTheme({
               borderColor: "#64748b",
             },
             "&.Mui-focused fieldset": {
-              borderColor: "#3b82f6",
+              borderColor: "#10b981",
               borderWidth: 2,
             },
           },
@@ -490,7 +496,7 @@ export const darkTheme = createTheme({
             borderColor: "#64748b",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#3b82f6",
+            borderColor: "#10b981",
             borderWidth: 2,
           },
         },
@@ -508,7 +514,7 @@ export const darkTheme = createTheme({
               borderColor: "#64748b",
             },
             "&.Mui-focused fieldset": {
-              borderColor: "#3b82f6",
+              borderColor: "#10b981",
               borderWidth: 2,
             },
           },
@@ -533,10 +539,10 @@ export const darkTheme = createTheme({
             backgroundColor: "#334155",
           },
           "&.Mui-selected": {
-            backgroundColor: "#3b82f6",
+            backgroundColor: "#10b981",
             color: "#ffffff",
             "&:hover": {
-              backgroundColor: "#2563eb",
+              backgroundColor: "#059669",
             },
             "& .MuiListItemIcon-root": {
               color: "#ffffff",
@@ -569,7 +575,7 @@ export const darkTheme = createTheme({
     MuiAvatar: {
       styleOverrides: {
         root: {
-          backgroundColor: "#3b82f6",
+          backgroundColor: "#10b981",
           color: "#ffffff",
         },
       },

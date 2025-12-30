@@ -149,8 +149,8 @@ const RegisterPage = () => {
           bottom: 0,
           zIndex: -1,
           background: isDark
-            ? "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)"
-            : "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
+            ? "linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)"
+            : "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f8fafc 100%)",
         }}
       />
       {/* Floating Orbs */}
@@ -163,8 +163,8 @@ const RegisterPage = () => {
           height: 200,
           borderRadius: "50%",
           background: isDark
-            ? "radial-gradient(circle, rgba(147, 51, 234, 0.15) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%)",
+            ? "radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%)",
           filter: "blur(20px)",
           zIndex: 0,
           pointerEvents: "none",

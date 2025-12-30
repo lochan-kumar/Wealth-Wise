@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -22,6 +23,8 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import LoginModal from "../components/LoginModal";
+import RegisterModal from "../components/RegisterModal";
 
 const features = [
   {
@@ -29,27 +32,27 @@ const features = [
     title: "Multi-Account Management",
     description:
       "Link multiple bank accounts and track all your finances in one place.",
-    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    gradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
   },
   {
     icon: <TrendingUp sx={{ fontSize: 40 }} />,
     title: "Smart Analytics",
     description:
       "Visualize spending patterns with interactive charts and insights.",
-    gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)",
   },
   {
     icon: <Security sx={{ fontSize: 40 }} />,
     title: "Budget Alerts",
     description: "Set category budgets and get alerts when approaching limits.",
-    gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    gradient: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
   },
   {
     icon: <Speed sx={{ fontSize: 40 }} />,
     title: "Real-time Tracking",
     description:
       "Track income and expenses instantly with auto-categorization.",
-    gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    gradient: "linear-gradient(135deg, #22c55e 0%, #4ade80 100%)",
   },
 ];
 
@@ -73,6 +76,20 @@ const LandingPage = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
+  // Modal state
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+
+  const handleOpenLogin = () => {
+    setRegisterOpen(false);
+    setLoginOpen(true);
+  };
+
+  const handleOpenRegister = () => {
+    setLoginOpen(false);
+    setRegisterOpen(true);
+  };
+
   // Glass effect styles
   const glassStyle = {
     background: isDark ? alpha("#1e293b", 0.7) : alpha("#ffffff", 0.85),
@@ -94,7 +111,7 @@ const LandingPage = () => {
         overflow: "hidden",
       }}
     >
-      {/* Gradient Background */}
+      {/* Base Gradient Background */}
       <Box
         sx={{
           position: "fixed",
@@ -102,62 +119,101 @@ const LandingPage = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          zIndex: -1,
+          zIndex: -2,
           background: isDark
-            ? "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)"
-            : "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: "-50%",
-            left: "-50%",
-            width: "200%",
-            height: "200%",
-            background: isDark
-              ? "radial-gradient(ellipse at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(147, 51, 234, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 40% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 40%)"
-              : "radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(147, 51, 234, 0.08) 0%, transparent 50%)",
-            animation: "pulse 15s ease-in-out infinite",
-          },
-          "@keyframes pulse": {
-            "0%, 100%": { transform: "translate(0, 0)" },
-            "50%": { transform: "translate(-5%, -5%)" },
-          },
+            ? "linear-gradient(180deg, #0a1628 0%, #0f2922 40%, #134e4a 70%, #0d3d3a 100%)"
+            : "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 40%, #d1fae5 70%, #ecfdf5 100%)",
         }}
       />
 
-      {/* Floating Orbs */}
+      {/* Floating Orbs - Only visible below hero */}
       <Box
         sx={{
           position: "fixed",
-          top: "10%",
-          right: "10%",
-          width: 300,
-          height: 300,
+          top: "40%",
+          right: "5%",
+          width: 350,
+          height: 350,
           borderRadius: "50%",
           background: isDark
-            ? "radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%)",
-          filter: "blur(20px)",
+            ? "radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, transparent 70%)",
+          filter: "blur(30px)",
+          zIndex: -1,
           animation: "float 8s ease-in-out infinite",
           "@keyframes float": {
-            "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
-            "50%": { transform: "translateY(-30px) rotate(180deg)" },
+            "0%, 100%": { transform: "translateY(0)" },
+            "50%": { transform: "translateY(-40px)" },
           },
         }}
       />
       <Box
         sx={{
           position: "fixed",
-          bottom: "20%",
-          left: "5%",
+          bottom: "15%",
+          left: "8%",
+          width: 280,
+          height: 280,
+          borderRadius: "50%",
+          background: isDark
+            ? "radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%)",
+          filter: "blur(25px)",
+          zIndex: -1,
+          animation: "float 10s ease-in-out infinite reverse",
+        }}
+      />
+      <Box
+        sx={{
+          position: "fixed",
+          top: "60%",
+          left: "45%",
           width: 200,
           height: 200,
           borderRadius: "50%",
           background: isDark
-            ? "radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%)",
-          filter: "blur(15px)",
-          animation: "float 10s ease-in-out infinite reverse",
+            ? "radial-gradient(circle, rgba(20, 184, 166, 0.25) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(13, 148, 136, 0.1) 0%, transparent 70%)",
+          filter: "blur(20px)",
+          zIndex: -1,
+          animation: "float 12s ease-in-out infinite",
+        }}
+      />
+
+      {/* Hero Background Image - Only at top */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "100vh",
+          zIndex: -1,
+          backgroundImage: isDark
+            ? 'url("/bg-hero.png")'
+            : 'url("/bg-hero-light.png")',
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          backgroundRepeat: "no-repeat",
+          filter: isDark ? "blur(5px)" : "blur(3px)",
+          maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, black 60%, transparent 100%)",
+        }}
+      />
+
+      {/* Dark overlay for hero text readability */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "100vh",
+          zIndex: -1,
+          background: isDark
+            ? "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)"
+            : "transparent",
         }}
       />
 
@@ -168,7 +224,7 @@ const LandingPage = () => {
       <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
         <Box
           sx={{
-            pt: { xs: 10, md: 14 },
+            pt: { xs: 14, md: 18 },
             pb: 10,
             textAlign: "center",
           }}
@@ -248,7 +304,9 @@ const LandingPage = () => {
             <Button
               variant="contained"
               size="large"
-              onClick={() => navigate(user ? "/dashboard" : "/register")}
+              onClick={() =>
+                user ? navigate("/dashboard") : handleOpenRegister()
+              }
               endIcon={<ArrowForward />}
               sx={{
                 px: 5,
@@ -273,22 +331,22 @@ const LandingPage = () => {
             <Button
               variant="outlined"
               size="large"
-              onClick={() => navigate("/login")}
+              onClick={handleOpenLogin}
               sx={{
                 px: 5,
                 py: 2,
                 fontSize: "1.1rem",
                 borderWidth: 2,
-                borderColor: isDark ? alpha("#ffffff", 0.5) : "#2563eb",
-                color: isDark ? "#ffffff" : "#2563eb",
+                borderColor: isDark ? alpha("#ffffff", 0.5) : "#059669",
+                color: isDark ? "#ffffff" : "#059669",
                 borderRadius: 3,
                 transition: "all 0.3s ease",
                 "&:hover": {
                   borderWidth: 2,
-                  borderColor: isDark ? "#ffffff" : "#1d4ed8",
+                  borderColor: isDark ? "#ffffff" : "#047857",
                   backgroundColor: isDark
                     ? alpha("#ffffff", 0.1)
-                    : alpha("#2563eb", 0.05),
+                    : alpha("#059669", 0.05),
                   transform: "translateY(-3px)",
                 },
               }}
@@ -571,6 +629,18 @@ const LandingPage = () => {
           </Box>
         </Container>
       </Box>
+
+      {/* Auth Modals */}
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSwitchToRegister={handleOpenRegister}
+      />
+      <RegisterModal
+        open={registerOpen}
+        onClose={() => setRegisterOpen(false)}
+        onSwitchToLogin={handleOpenLogin}
+      />
     </Box>
   );
 };

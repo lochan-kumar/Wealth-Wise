@@ -173,6 +173,7 @@ const DashboardLayout = () => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        
       }}
     >
       <Toolbar>
@@ -238,7 +239,10 @@ const DashboardLayout = () => {
       </Toolbar>
       <Divider
         sx={{
-          borderColor: isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.1),
+          borderColor: isDark
+            ? alpha("#ffffff", 0.1)
+            : "rgba(5, 150, 105, 0.25)",
+          borderWidth: 1.5,
         }}
       />
       <List sx={{ flex: 1, px: 2, py: 1 }}>
@@ -277,7 +281,10 @@ const DashboardLayout = () => {
       </List>
       <Divider
         sx={{
-          borderColor: isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.1),
+          borderColor: isDark
+            ? alpha("#ffffff", 0.1)
+            : "rgba(5, 150, 105, 0.25)",
+          borderWidth: 1.5,
         }}
       />
       <Box sx={{ p: 2 }}>
@@ -324,8 +331,8 @@ const DashboardLayout = () => {
           bottom: 0,
           zIndex: -1,
           background: isDark
-            ? "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)"
-            : "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
+            ? "linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)"
+            : "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f8fafc 100%)",
           "&::before": {
             content: '""',
             position: "absolute",
@@ -334,8 +341,8 @@ const DashboardLayout = () => {
             width: "200%",
             height: "200%",
             background: isDark
-              ? "radial-gradient(ellipse at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(147, 51, 234, 0.15) 0%, transparent 50%)"
-              : "radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(147, 51, 234, 0.08) 0%, transparent 50%)",
+              ? "radial-gradient(ellipse at 20% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.12) 0%, transparent 50%)"
+              : "radial-gradient(ellipse at 20% 80%, rgba(5, 150, 105, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%)",
             animation: "pulse 15s ease-in-out infinite",
           },
           "@keyframes pulse": {
@@ -355,8 +362,8 @@ const DashboardLayout = () => {
           height: 300,
           borderRadius: "50%",
           background: isDark
-            ? "radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)",
+            ? "radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, transparent 70%)",
           filter: "blur(20px)",
           animation: "float 8s ease-in-out infinite",
           zIndex: 0,
@@ -376,8 +383,8 @@ const DashboardLayout = () => {
           height: 200,
           borderRadius: "50%",
           background: isDark
-            ? "radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%)",
+            ? "radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%)",
           filter: "blur(15px)",
           animation: "float 10s ease-in-out infinite reverse",
           zIndex: 0,
@@ -391,12 +398,12 @@ const DashboardLayout = () => {
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          bgcolor: isDark ? alpha("#1e293b", 0.8) : alpha("#ffffff", 0.85),
+          bgcolor: isDark ? alpha("#1e293b", 0.8) : "rgba(240, 253, 244, 0.85)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           color: isDark ? "#f8fafc" : "#1e293b",
-          borderBottom: `1px solid ${
-            isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.08)
+          borderBottom: `3px solid ${
+            isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
           }`,
           borderRadius: 0,
         }}
@@ -473,11 +480,13 @@ const DashboardLayout = () => {
             "& .MuiDrawer-paper": {
               width: drawerWidth,
               borderRadius: 0,
-              bgcolor: isDark ? alpha("#1e293b", 0.95) : alpha("#ffffff", 0.95),
+              bgcolor: isDark
+                ? alpha("#1e293b", 0.95)
+                : "rgba(240, 253, 244, 0.95)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              borderRight: `1px solid ${
-                isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.08)
+              borderRight: `3px solid ${
+                isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
               }`,
             },
           }}
@@ -491,11 +500,13 @@ const DashboardLayout = () => {
             "& .MuiDrawer-paper": {
               width: drawerWidth,
               borderRadius: 0,
-              bgcolor: isDark ? alpha("#1e293b", 0.8) : alpha("#ffffff", 0.85),
+              bgcolor: isDark
+                ? alpha("#1e293b", 0.8)
+                : "rgba(240, 253, 244, 0.85)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              borderRight: `1px solid ${
-                isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.08)
+              borderRight: `3px solid ${
+                isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
               }`,
             },
           }}
