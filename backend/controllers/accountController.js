@@ -77,31 +77,57 @@ const linkBankAccount = async (req, res) => {
       isDefault: false,
     });
 
-    // Auto-fetch dummy transactions
+    // Auto-fetch dummy transactions (mix of income and expense)
     const dummyTransactions = generateTransactions(12);
 
+    // Calculate balance change from transactions
+    let balanceChange = 0;
+
     const savedTransactions = await Promise.all(
-      dummyTransactions.map((t) =>
-        Transaction.create({
+      dummyTransactions.map((t) => {
+        // Update balance change: income adds, expense subtracts
+        if (t.type === "income") {
+          balanceChange += t.amount;
+        } else {
+          balanceChange -= t.amount;
+        }
+
+        return Transaction.create({
           user: req.user.id,
           account: account._id,
-          type: "expense",
+          type: t.type, // Use the type from the transaction (income or expense)
           amount: t.amount,
           description: t.description,
           category: t.category,
-          payee: t.merchant,
+          payee: t.payee,
           date: t.date,
           source: "bank",
-        })
-      )
+        });
+      })
     );
+
+    // Update account balance
+    account.balance += balanceChange;
+    account.updatedAt = new Date();
+    await account.save();
+
+    // Count income and expense transactions
+    const incomeCount = savedTransactions.filter(
+      (t) => t.type === "income"
+    ).length;
+    const expenseCount = savedTransactions.filter(
+      (t) => t.type === "expense"
+    ).length;
 
     res.status(201).json({
       success: true,
-      message: `Successfully linked ${bankName} and imported ${savedTransactions.length} transactions`,
+      message: `Successfully linked ${bankName} and imported ${savedTransactions.length} transactions (${incomeCount} income, ${expenseCount} expense)`,
       data: {
         account,
         transactionsImported: savedTransactions.length,
+        balanceChange,
+        incomeCount,
+        expenseCount,
       },
     });
   } catch (error) {
@@ -144,9 +170,49 @@ const unlinkAccount = async (req, res) => {
   }
 };
 
+// @desc    Update account balance
+// @route   PUT /api/accounts/:id
+// @access  Private
+const updateAccountBalance = async (req, res) => {
+  try {
+    const { balance } = req.body;
+
+    if (balance === undefined || balance === null) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a balance value",
+      });
+    }
+
+    const account = await Account.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!account) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Account not found" });
+    }
+
+    account.balance = balance;
+    account.updatedAt = new Date();
+    await account.save();
+
+    res.json({
+      success: true,
+      message: "Balance updated successfully",
+      data: account,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getAccounts,
   getAvailableBanks,
   linkBankAccount,
   unlinkAccount,
+  updateAccountBalance,
 };

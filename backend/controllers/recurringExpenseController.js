@@ -218,6 +218,85 @@ const processRecurringExpenses = async (req, res) => {
   }
 };
 
+// @desc    Process a single recurring expense
+// @route   POST /api/recurring-expenses/:id/process
+// @access  Private
+const processSingleRecurringExpense = async (req, res) => {
+  try {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    const expense = await RecurringExpense.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!expense) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Recurring expense not found" });
+    }
+
+    if (!expense.isActive) {
+      return res
+        .status(400)
+        .json({ success: false, message: "This recurring expense is paused" });
+    }
+
+    // Check if already processed this month
+    if (expense.lastProcessedDate) {
+      const lastProcessed = new Date(expense.lastProcessedDate);
+      if (
+        lastProcessed.getMonth() === currentMonth &&
+        lastProcessed.getFullYear() === currentYear
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "This expense has already been processed this month",
+        });
+      }
+    }
+
+    // Create the transaction with the scheduled day of month
+    const transaction = await Transaction.create({
+      user: req.user.id,
+      account: expense.account,
+      type: "expense",
+      amount: expense.amount,
+      description: expense.description || `Recurring: ${expense.name}`,
+      category: expense.category,
+      payee: expense.name,
+      date: new Date(currentYear, currentMonth, expense.dayOfMonth),
+      source: "manual",
+    });
+
+    // Update account balance
+    await Account.findByIdAndUpdate(expense.account, {
+      $inc: { balance: -expense.amount },
+      updatedAt: new Date(),
+    });
+
+    // Update lastProcessedDate
+    expense.lastProcessedDate = new Date();
+    await expense.save();
+
+    res.json({
+      success: true,
+      message: `Processed "${
+        expense.name
+      }" - ₹${expense.amount.toLocaleString()} deducted`,
+      data: {
+        expense: expense.name,
+        amount: expense.amount,
+        transactionId: transaction._id,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getRecurringExpenses,
   getRecurringExpense,
@@ -225,4 +304,5 @@ module.exports = {
   updateRecurringExpense,
   deleteRecurringExpense,
   processRecurringExpenses,
+  processSingleRecurringExpense,
 };

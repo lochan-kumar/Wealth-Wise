@@ -37,15 +37,11 @@ import {
   exportToPDF,
   deleteAllTransactions,
 } from "../services/api";
-import AnimatedSnackbar from "../components/AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 
 const ProfilePage = () => {
   const { user } = useAuth();
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -98,20 +94,12 @@ const ProfilePage = () => {
     e.preventDefault();
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setSnackbar({
-        open: true,
-        message: "New passwords do not match",
-        severity: "error",
-      });
+      toast.error("New passwords do not match");
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      setSnackbar({
-        open: true,
-        message: "Password must be at least 6 characters",
-        severity: "error",
-      });
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
@@ -121,22 +109,14 @@ const ProfilePage = () => {
         passwordForm.currentPassword,
         passwordForm.newPassword
       );
-      setSnackbar({
-        open: true,
-        message: "Password updated successfully!",
-        severity: "success",
-      });
+      toast.success("Password updated successfully!");
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error updating password",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error updating password");
     } finally {
       setLoading(false);
     }
@@ -172,17 +152,9 @@ const ProfilePage = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      setSnackbar({
-        open: true,
-        message: "Export successful!",
-        severity: "success",
-      });
+      toast.success("Export successful!");
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error exporting data",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error exporting data");
     } finally {
       setLoading(false);
     }
@@ -190,30 +162,18 @@ const ProfilePage = () => {
 
   const handleClearAllData = async () => {
     if (confirmText !== "DELETE") {
-      setSnackbar({
-        open: true,
-        message: "Please type DELETE to confirm",
-        severity: "error",
-      });
+      toast.error("Please type DELETE to confirm");
       return;
     }
 
     setLoading(true);
     try {
       const res = await deleteAllTransactions();
-      setSnackbar({
-        open: true,
-        message: res.data.message || "All transactions deleted!",
-        severity: "success",
-      });
+      toast.success(res.data.message || "All transactions deleted!");
       setConfirmDialogOpen(false);
       setConfirmText("");
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error clearing data",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error clearing data");
     } finally {
       setLoading(false);
     }
@@ -525,14 +485,6 @@ const ProfilePage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
     </Box>
   );
 };

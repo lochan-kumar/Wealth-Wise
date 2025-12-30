@@ -34,7 +34,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "../services/api";
-import AnimatedSnackbar from "../components/AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 
 const colorOptions = [
   "#ef4444",
@@ -58,11 +58,7 @@ const BudgetsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [tabValue, setTabValue] = useState(0);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const toast = useToast();
 
   const [form, setForm] = useState({
     name: "",
@@ -163,37 +159,21 @@ const BudgetsPage = () => {
 
       if (editingCategory) {
         await updateCategory(editingCategory._id, data);
-        setSnackbar({
-          open: true,
-          message: "Category updated!",
-          severity: "success",
-        });
+        toast.success("Category updated!");
       } else {
         await createCategory(data);
-        setSnackbar({
-          open: true,
-          message: "Category created!",
-          severity: "success",
-        });
+        toast.success("Category created!");
       }
       handleCloseDialog();
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error saving category",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error saving category");
     }
   };
 
   const handleDelete = async (id, name) => {
     if (name === "Other") {
-      setSnackbar({
-        open: true,
-        message: "Cannot delete the default 'Other' category",
-        severity: "warning",
-      });
+      toast.warning("Cannot delete the default 'Other' category");
       return;
     }
 
@@ -202,18 +182,10 @@ const BudgetsPage = () => {
     ) {
       try {
         const res = await deleteCategory(id);
-        setSnackbar({
-          open: true,
-          message: res.data.message,
-          severity: "success",
-        });
+        toast.success(res.data.message);
         fetchData();
       } catch (error) {
-        setSnackbar({
-          open: true,
-          message: error.response?.data?.message || "Error deleting category",
-          severity: "error",
-        });
+        toast.error(error.response?.data?.message || "Error deleting category");
       }
     }
   };
@@ -535,14 +507,6 @@ const BudgetsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
     </Box>
   );
 };

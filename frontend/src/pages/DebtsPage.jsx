@@ -50,7 +50,7 @@ import {
   deleteDebtPerson,
   getAccounts,
 } from "../services/api";
-import AnimatedSnackbar from "../components/AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 
 const transactionTypes = [
   {
@@ -92,11 +92,7 @@ const DebtsPage = () => {
   const [editingPerson, setEditingPerson] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [expandedPerson, setExpandedPerson] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const toast = useToast();
 
   const [personForm, setPersonForm] = useState({
     name: "",
@@ -193,27 +189,15 @@ const DebtsPage = () => {
     try {
       if (editingPerson) {
         await updateDebtPerson(editingPerson._id, personForm);
-        setSnackbar({
-          open: true,
-          message: "Person updated!",
-          severity: "success",
-        });
+        toast.success("Person updated!");
       } else {
         await createDebtPerson(personForm);
-        setSnackbar({
-          open: true,
-          message: "Person added!",
-          severity: "success",
-        });
+        toast.success("Person added!");
       }
       setPersonDialogOpen(false);
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error saving person",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error saving person");
     }
   };
 
@@ -225,19 +209,11 @@ const DebtsPage = () => {
         description: transactionForm.description,
         accountId: transactionForm.accountId || null,
       });
-      setSnackbar({
-        open: true,
-        message: "Transaction added!",
-        severity: "success",
-      });
+      toast.success("Transaction added!");
       setTransactionDialogOpen(false);
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error adding transaction",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error adding transaction");
     }
   };
 
@@ -245,18 +221,10 @@ const DebtsPage = () => {
     if (window.confirm("Delete this transaction from debt history?")) {
       try {
         await deleteDebtTransaction(personId, transactionId);
-        setSnackbar({
-          open: true,
-          message: "Transaction removed!",
-          severity: "success",
-        });
+        toast.success("Transaction removed!");
         fetchData();
       } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Error deleting transaction",
-          severity: "error",
-        });
+        toast.error("Error deleting transaction");
       }
     }
   };
@@ -265,18 +233,10 @@ const DebtsPage = () => {
     if (window.confirm("Delete this person and all their debt history?")) {
       try {
         await deleteDebtPerson(id);
-        setSnackbar({
-          open: true,
-          message: "Person deleted!",
-          severity: "success",
-        });
+        toast.success("Person deleted!");
         fetchData();
       } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Error deleting person",
-          severity: "error",
-        });
+        toast.error("Error deleting person");
       }
     }
   };
@@ -768,14 +728,6 @@ const DebtsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
     </Box>
   );
 };

@@ -1,5 +1,6 @@
 const BankAccount = require("../models/BankAccount");
-const Expense = require("../models/Expense");
+const Transaction = require("../models/Transaction");
+const Account = require("../models/Account");
 const {
   simulateBankLookup,
   generateTransactions,
@@ -76,8 +77,14 @@ const fetchTransactions = async (req, res) => {
   try {
     const { accountId } = req.body;
 
+    if (!accountId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide account ID" });
+    }
+
     // Verify account belongs to user
-    const account = await BankAccount.findOne({
+    const account = await Account.findOne({
       _id: accountId,
       user: req.user.id,
     });
@@ -85,31 +92,60 @@ const fetchTransactions = async (req, res) => {
     if (!account) {
       return res
         .status(404)
-        .json({ success: false, message: "Bank account not found" });
+        .json({ success: false, message: "Account not found" });
     }
 
-    // Generate dummy transactions
+    // Generate dummy transactions (mix of income and expense)
     const transactions = generateTransactions(15);
 
-    // Save transactions as expenses
-    const savedExpenses = await Promise.all(
-      transactions.map((t) =>
-        Expense.create({
+    // Calculate balance change from transactions
+    let balanceChange = 0;
+
+    // Save transactions using Transaction model
+    const savedTransactions = await Promise.all(
+      transactions.map((t) => {
+        // Update balance change: income adds, expense subtracts
+        if (t.type === "income") {
+          balanceChange += t.amount;
+        } else {
+          balanceChange -= t.amount;
+        }
+
+        return Transaction.create({
           user: req.user.id,
+          account: accountId,
+          type: t.type,
           amount: t.amount,
           description: t.description,
           category: t.category,
-          merchant: t.merchant,
+          payee: t.payee,
           date: t.date,
           source: "bank",
-        })
-      )
+        });
+      })
     );
+
+    // Update account balance
+    account.balance += balanceChange;
+    account.updatedAt = new Date();
+    await account.save();
+
+    // Count income and expense transactions
+    const incomeCount = savedTransactions.filter(
+      (t) => t.type === "income"
+    ).length;
+    const expenseCount = savedTransactions.filter(
+      (t) => t.type === "expense"
+    ).length;
 
     res.json({
       success: true,
-      message: `Fetched ${savedExpenses.length} transactions from ${account.bankName}`,
-      data: savedExpenses,
+      message: `Fetched ${savedTransactions.length} transactions (${incomeCount} income, ${expenseCount} expense) from bank`,
+      data: {
+        transactions: savedTransactions,
+        balanceChange: balanceChange,
+        newBalance: account.balance,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

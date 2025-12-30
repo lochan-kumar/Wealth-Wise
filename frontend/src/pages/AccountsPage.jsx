@@ -32,25 +32,25 @@ import {
   Delete,
   CheckCircle,
   Link as LinkIcon,
+  Edit,
 } from "@mui/icons-material";
 import {
   getAccounts,
   getAvailableBanks,
   linkBankAccount,
   unlinkAccount,
+  updateAccountBalance,
 } from "../services/api";
-import AnimatedSnackbar from "../components/AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 
 const AccountsPage = () => {
   const [accounts, setAccounts] = useState([]);
   const [banks, setBanks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const [cashDialogOpen, setCashDialogOpen] = useState(false);
+  const [cashBalance, setCashBalance] = useState("");
+  const toast = useToast();
 
   const [form, setForm] = useState({
     bankName: "",
@@ -103,19 +103,13 @@ const AccountsPage = () => {
   const handleSubmit = async () => {
     try {
       const res = await linkBankAccount(form.bankName, form.accountNumber);
-      setSnackbar({
-        open: true,
-        message: `Bank linked! ${res.data.data.transactionsImported} transactions imported.`,
-        severity: "success",
-      });
+      toast.success(
+        `Bank linked! ${res.data.data.transactionsImported} transactions imported.`
+      );
       handleCloseDialog();
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error linking bank",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error linking bank");
     }
   };
 
@@ -123,19 +117,32 @@ const AccountsPage = () => {
     if (window.confirm("Unlink this bank account?")) {
       try {
         await unlinkAccount(id);
-        setSnackbar({
-          open: true,
-          message: "Account unlinked!",
-          severity: "success",
-        });
+        toast.success("Account unlinked!");
         fetchData();
       } catch (error) {
-        setSnackbar({
-          open: true,
-          message: error.response?.data?.message || "Error unlinking account",
-          severity: "error",
-        });
+        toast.error(error.response?.data?.message || "Error unlinking account");
       }
+    }
+  };
+
+  const handleOpenCashDialog = () => {
+    setCashBalance(cashAccount?.balance?.toString() || "0");
+    setCashDialogOpen(true);
+  };
+
+  const handleCloseCashDialog = () => {
+    setCashDialogOpen(false);
+  };
+
+  const handleUpdateCashBalance = async () => {
+    try {
+      const balance = parseFloat(cashBalance) || 0;
+      await updateAccountBalance(cashAccount._id, balance);
+      toast.success("Cash balance updated!");
+      handleCloseCashDialog();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error updating balance");
     }
   };
 
@@ -205,6 +212,14 @@ const AccountsPage = () => {
                     <Typography variant="caption" color="text.secondary">
                       Balance
                     </Typography>
+                    <Button
+                      size="small"
+                      startIcon={<Edit />}
+                      onClick={handleOpenCashDialog}
+                      sx={{ mt: 0.5 }}
+                    >
+                      Set Balance
+                    </Button>
                   </Box>
                 </Box>
               ) : (
@@ -341,13 +356,40 @@ const AccountsPage = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
+      {/* Edit Cash Balance Dialog */}
+      <Dialog
+        open={cashDialogOpen}
+        onClose={handleCloseCashDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Set Cash Balance</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <TextField
+              fullWidth
+              label="Current Cash Balance"
+              type="number"
+              value={cashBalance}
+              onChange={(e) => setCashBalance(e.target.value)}
+              placeholder="Enter your current cash amount"
+              InputProps={{
+                startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography>,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Enter the amount of cash you currently have. This will be your
+              starting balance for cash transactions.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseCashDialog}>Cancel</Button>
+          <Button variant="contained" onClick={handleUpdateCashBalance}>
+            Update Balance
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

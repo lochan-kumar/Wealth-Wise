@@ -5,6 +5,7 @@ const {
   getAvailableBanks,
   linkBankAccount,
   unlinkAccount,
+  updateAccountBalance,
 } = require("../controllers/accountController");
 const { protect } = require("../middleware/auth");
 
@@ -66,6 +67,37 @@ router.get("/banks", getAvailableBanks);
  *         description: Bank linked and transactions imported
  */
 router.post("/link-bank", linkBankAccount);
+
+/**
+ * @swagger
+ * /api/accounts/{id}:
+ *   put:
+ *     summary: Update account balance
+ *     tags: [Accounts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - balance
+ *             properties:
+ *               balance:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Balance updated
+ */
+router.put("/:id", updateAccountBalance);
 
 /**
  * @swagger

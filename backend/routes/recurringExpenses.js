@@ -8,6 +8,7 @@ const {
   updateRecurringExpense,
   deleteRecurringExpense,
   processRecurringExpenses,
+  processSingleRecurringExpense,
 } = require("../controllers/recurringExpenseController");
 
 // All routes require authentication
@@ -18,6 +19,9 @@ router.post("/process", processRecurringExpenses);
 
 // CRUD routes
 router.route("/").get(getRecurringExpenses).post(createRecurringExpense);
+
+// Process single recurring expense
+router.post("/:id/process", processSingleRecurringExpense);
 
 router
   .route("/:id")

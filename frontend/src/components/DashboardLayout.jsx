@@ -49,7 +49,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useThemeMode } from "../context/ThemeContext";
 import { createTransaction, getAccounts } from "../services/api";
-import AnimatedSnackbar from "./AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 import { getISTDateTime } from "../utils/dateUtils";
 
 const drawerWidth = 260;
@@ -92,11 +92,7 @@ const DashboardLayout = () => {
   // Quick Add Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
   const [accounts, setAccounts] = useState([]);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const toast = useToast();
   const [form, setForm] = useState({
     account: "",
     type: "expense",
@@ -136,11 +132,7 @@ const DashboardLayout = () => {
         ...form,
         amount: parseFloat(form.amount),
       });
-      setSnackbar({
-        open: true,
-        message: "Transaction added!",
-        severity: "success",
-      });
+      toast.success("Transaction added!");
       setDialogOpen(false);
       setForm((prev) => ({
         ...prev,
@@ -152,11 +144,7 @@ const DashboardLayout = () => {
       // Trigger a page refresh by navigating to current location
       window.location.reload();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error adding transaction",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error adding transaction");
     }
   };
 
@@ -564,7 +552,23 @@ const DashboardLayout = () => {
               >
                 {accounts.map((acc) => (
                   <MenuItem key={acc._id} value={acc._id}>
-                    {acc.name}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <span>{acc.name}</span>
+                      <span
+                        style={{
+                          color: acc.balance >= 0 ? "#16a34a" : "#dc2626",
+                          fontWeight: 600,
+                        }}
+                      >
+                        ₹{(acc.balance || 0).toLocaleString()}
+                      </span>
+                    </Box>
                   </MenuItem>
                 ))}
               </Select>
@@ -645,14 +649,6 @@ const DashboardLayout = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar for notifications */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
     </Box>
   );
 };

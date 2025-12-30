@@ -74,7 +74,7 @@ router.get("/accounts", getBankAccounts);
  *                 description: ID of linked bank account
  *     responses:
  *       200:
- *         description: Transactions fetched and saved as expenses
+ *         description: Transactions fetched and saved to account
  */
 router.post("/fetch-transactions", fetchTransactions);
 

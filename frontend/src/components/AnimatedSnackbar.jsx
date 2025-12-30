@@ -76,6 +76,8 @@ const AnimatedSnackbar = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       sx={{
+        zIndex: 9999,
+        bottom: "80px !important", // Position above the FAB button
         "& .MuiSnackbarContent-root": {
           transition: "all 0.3s ease",
         },

@@ -161,10 +161,11 @@ const updateTransaction = async (req, res) => {
         .json({ success: false, message: "Transaction not found" });
     }
 
-    // Store old values for budget update
+    // Store old values for budget and balance updates
     const oldAmount = transaction.amount;
     const oldCategory = transaction.category;
     const oldType = transaction.type;
+    const oldAccountId = transaction.account.toString();
 
     // Validate account if being changed
     if (req.body.account) {
@@ -177,6 +178,34 @@ const updateTransaction = async (req, res) => {
           .status(400)
           .json({ success: false, message: "Invalid account" });
       }
+    }
+
+    // Get new values (or keep old if not provided)
+    const newAmount =
+      req.body.amount !== undefined ? req.body.amount : oldAmount;
+    const newType = req.body.type || oldType;
+    const newAccountId = req.body.account || oldAccountId;
+
+    // Check if anything that affects balance has changed
+    const amountChanged = newAmount !== oldAmount;
+    const typeChanged = newType !== oldType;
+    const accountChanged = newAccountId !== oldAccountId;
+
+    // If amount, type or account changed, update balances
+    if (amountChanged || typeChanged || accountChanged) {
+      // Reverse the old transaction's effect on old account
+      const oldBalanceEffect = oldType === "income" ? oldAmount : -oldAmount;
+      await Account.findByIdAndUpdate(oldAccountId, {
+        $inc: { balance: -oldBalanceEffect },
+        updatedAt: new Date(),
+      });
+
+      // Apply the new transaction's effect on new account
+      const newBalanceEffect = newType === "income" ? newAmount : -newAmount;
+      await Account.findByIdAndUpdate(newAccountId, {
+        $inc: { balance: newBalanceEffect },
+        updatedAt: new Date(),
+      });
     }
 
     transaction = await Transaction.findByIdAndUpdate(req.params.id, req.body, {

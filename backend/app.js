@@ -42,6 +42,7 @@ app.use("/api/recurring-expenses", require("./routes/recurringExpenses"));
 app.use("/api/debts", require("./routes/debts"));
 app.use("/api/changelog", require("./routes/changelog"));
 app.use("/api/categories", require("./routes/categories"));
+app.use("/api/bank", require("./routes/bank"));
 
 // Welcome route
 app.get("/", (req, res) => {

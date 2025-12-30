@@ -31,7 +31,7 @@ import {
   deleteGoal,
   getAccounts,
 } from "../services/api";
-import AnimatedSnackbar from "../components/AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 
 const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
@@ -42,11 +42,7 @@ const GoalsPage = () => {
   const [editingGoal, setEditingGoal] = useState(null);
   const [progressAmount, setProgressAmount] = useState("");
   const [progressAccount, setProgressAccount] = useState("");
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const toast = useToast();
 
   const [form, setForm] = useState({
     name: "",
@@ -187,27 +183,15 @@ const GoalsPage = () => {
 
       if (editingGoal) {
         await updateGoal(editingGoal._id, data);
-        setSnackbar({
-          open: true,
-          message: "Goal updated!",
-          severity: "success",
-        });
+        toast.success("Goal updated!");
       } else {
         await createGoal(data);
-        setSnackbar({
-          open: true,
-          message: "Goal created!",
-          severity: "success",
-        });
+        toast.success("Goal created!");
       }
       handleCloseDialog();
       fetchGoals();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error saving goal",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error saving goal");
     }
   };
 
@@ -228,19 +212,11 @@ const GoalsPage = () => {
         parseFloat(progressAmount),
         progressAccount || null
       );
-      setSnackbar({
-        open: true,
-        message: res.data.message || "Progress updated!",
-        severity: "success",
-      });
+      toast.success(res.data.message || "Progress updated!");
       setProgressDialogOpen(false);
       fetchGoals();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error updating progress",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error updating progress");
     }
   };
 
@@ -248,18 +224,10 @@ const GoalsPage = () => {
     if (window.confirm("Delete this goal?")) {
       try {
         await deleteGoal(id);
-        setSnackbar({
-          open: true,
-          message: "Goal deleted!",
-          severity: "success",
-        });
+        toast.success("Goal deleted!");
         fetchGoals();
       } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Error deleting goal",
-          severity: "error",
-        });
+        toast.error("Error deleting goal");
       }
     }
   };
@@ -553,14 +521,6 @@ const GoalsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
     </Box>
   );
 };

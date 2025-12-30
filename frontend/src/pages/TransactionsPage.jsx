@@ -37,7 +37,7 @@ import {
   getAccounts,
   getCategories,
 } from "../services/api";
-import AnimatedSnackbar from "../components/AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 import { getISTDateTime } from "../utils/dateUtils";
 
 // Categories are now fetched from API
@@ -49,11 +49,7 @@ const TransactionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const toast = useToast();
 
   // Filters
   const [filters, setFilters] = useState({
@@ -156,27 +152,15 @@ const TransactionsPage = () => {
 
       if (editingTx) {
         await updateTransaction(editingTx._id, data);
-        setSnackbar({
-          open: true,
-          message: "Transaction updated!",
-          severity: "success",
-        });
+        toast.success("Transaction updated!");
       } else {
         await createTransaction(data);
-        setSnackbar({
-          open: true,
-          message: "Transaction added!",
-          severity: "success",
-        });
+        toast.success("Transaction added!");
       }
       handleCloseDialog();
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error saving transaction",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error saving transaction");
     }
   };
 
@@ -189,20 +173,13 @@ const TransactionsPage = () => {
         console.log("Calling delete API...");
         await deleteTransaction(id);
         console.log("Delete successful!");
-        setSnackbar({
-          open: true,
-          message: "Transaction deleted!",
-          severity: "success",
-        });
+        toast.success("Transaction deleted!");
         fetchData();
       } catch (error) {
         console.error("Delete error:", error);
-        setSnackbar({
-          open: true,
-          message:
-            error.response?.data?.message || "Error deleting transaction",
-          severity: "error",
-        });
+        toast.error(
+          error.response?.data?.message || "Error deleting transaction"
+        );
       }
     }
   };
@@ -531,14 +508,6 @@ const TransactionsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
     </Box>
   );
 };

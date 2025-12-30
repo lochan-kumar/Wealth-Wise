@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
 
@@ -22,34 +23,36 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+          <ToastProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-            {/* Protected Dashboard Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<DashboardHome />} />
-              <Route path="transactions" element={<TransactionsPage />} />
-              <Route path="budgets" element={<BudgetsPage />} />
-              <Route path="accounts" element={<AccountsPage />} />
-              <Route path="goals" element={<GoalsPage />} />
-              <Route path="recurring" element={<RecurringExpensesPage />} />
-              <Route path="debts" element={<DebtsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-            </Route>
+              {/* Protected Dashboard Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<DashboardHome />} />
+                <Route path="transactions" element={<TransactionsPage />} />
+                <Route path="budgets" element={<BudgetsPage />} />
+                <Route path="accounts" element={<AccountsPage />} />
+                <Route path="goals" element={<GoalsPage />} />
+                <Route path="recurring" element={<RecurringExpensesPage />} />
+                <Route path="debts" element={<DebtsPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+              </Route>
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Catch all */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ToastProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

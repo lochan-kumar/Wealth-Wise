@@ -27,11 +27,11 @@ import {
   createRecurringExpense,
   updateRecurringExpense,
   deleteRecurringExpense,
-  processRecurringExpenses,
+  processSingleRecurringExpense,
   getAccounts,
   getCategories,
 } from "../services/api";
-import AnimatedSnackbar from "../components/AnimatedSnackbar";
+import { useToast } from "../context/ToastContext";
 
 // Categories are fetched from API
 
@@ -42,11 +42,7 @@ const RecurringExpensesPage = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const toast = useToast();
 
   const [form, setForm] = useState({
     name: "",
@@ -160,28 +156,17 @@ const RecurringExpensesPage = () => {
 
       if (editingExpense) {
         await updateRecurringExpense(editingExpense._id, data);
-        setSnackbar({
-          open: true,
-          message: "Recurring expense updated!",
-          severity: "success",
-        });
+        toast.success("Recurring expense updated!");
       } else {
         await createRecurringExpense(data);
-        setSnackbar({
-          open: true,
-          message: "Recurring expense created!",
-          severity: "success",
-        });
+        toast.success("Recurring expense created!");
       }
       handleCloseDialog();
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message:
-          error.response?.data?.message || "Error saving recurring expense",
-        severity: "error",
-      });
+      toast.error(
+        error.response?.data?.message || "Error saving recurring expense"
+      );
     }
   };
 
@@ -189,18 +174,10 @@ const RecurringExpensesPage = () => {
     if (window.confirm("Delete this recurring expense?")) {
       try {
         await deleteRecurringExpense(id);
-        setSnackbar({
-          open: true,
-          message: "Recurring expense deleted!",
-          severity: "success",
-        });
+        toast.success("Recurring expense deleted!");
         fetchData();
       } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Error deleting recurring expense",
-          severity: "error",
-        });
+        toast.error("Error deleting recurring expense");
       }
     }
   };
@@ -210,38 +187,24 @@ const RecurringExpensesPage = () => {
       await updateRecurringExpense(expense._id, {
         isActive: !expense.isActive,
       });
-      setSnackbar({
-        open: true,
-        message: expense.isActive
+      toast.success(
+        expense.isActive
           ? "Recurring expense paused"
-          : "Recurring expense activated",
-        severity: "success",
-      });
+          : "Recurring expense activated"
+      );
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Error updating status",
-        severity: "error",
-      });
+      toast.error("Error updating status");
     }
   };
 
-  const handleProcessExpenses = async () => {
+  const handleProcessSingle = async (expense) => {
     try {
-      const res = await processRecurringExpenses();
-      setSnackbar({
-        open: true,
-        message: res.data.message,
-        severity: "success",
-      });
+      const res = await processSingleRecurringExpense(expense._id);
+      toast.success(res.data.message);
       fetchData();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Error processing expenses",
-        severity: "error",
-      });
+      toast.error(error.response?.data?.message || "Error processing expense");
     }
   };
 
@@ -285,13 +248,6 @@ const RecurringExpensesPage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            variant="outlined"
-            startIcon={<PlayArrow />}
-            onClick={handleProcessExpenses}
-          >
-            Process Now
-          </Button>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -385,6 +341,15 @@ const RecurringExpensesPage = () => {
                       label={expense.isActive ? "Active" : "Paused"}
                     />
                     <Box sx={{ flex: 1 }} />
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => handleProcessSingle(expense)}
+                      title="Process this expense now"
+                      disabled={!expense.isActive}
+                    >
+                      <PlayArrow fontSize="small" />
+                    </IconButton>
                     <IconButton
                       size="small"
                       onClick={() => handleOpenDialog(expense)}
@@ -522,14 +487,6 @@ const RecurringExpensesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar */}
-      <AnimatedSnackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
     </Box>
   );
 };

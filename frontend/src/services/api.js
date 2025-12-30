@@ -64,6 +64,8 @@ export const deleteRecurringExpense = (id) =>
   axios.delete(`${API_URL}/recurring-expenses/${id}`);
 export const processRecurringExpenses = () =>
   axios.post(`${API_URL}/recurring-expenses/process`);
+export const processSingleRecurringExpense = (id) =>
+  axios.post(`${API_URL}/recurring-expenses/${id}/process`);
 
 // Debts (Person-based)
 export const getDebtPersons = () => axios.get(`${API_URL}/debts`);
