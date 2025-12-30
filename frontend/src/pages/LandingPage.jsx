@@ -25,6 +25,7 @@ import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import LoginModal from "../components/LoginModal";
 import RegisterModal from "../components/RegisterModal";
+import Footer from "../components/Footer";
 
 const features = [
   {
@@ -81,11 +82,19 @@ const LandingPage = () => {
   const [registerOpen, setRegisterOpen] = useState(false);
 
   const handleOpenLogin = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
     setRegisterOpen(false);
     setLoginOpen(true);
   };
 
   const handleOpenRegister = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
     setLoginOpen(false);
     setRegisterOpen(true);
   };
@@ -351,7 +360,7 @@ const LandingPage = () => {
                 },
               }}
             >
-              Sign In
+              Login In
             </Button>
           </Box>
 
@@ -587,48 +596,7 @@ const LandingPage = () => {
       </Container>
 
       {/* Footer */}
-      <Box sx={{ mt: "auto", position: "relative", zIndex: 1 }}>
-        <Divider
-          sx={{
-            borderColor: isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.1),
-          }}
-        />
-        <Container maxWidth="lg">
-          <Box
-            sx={{
-              py: 4,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 2,
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{ color: isDark ? alpha("#ffffff", 0.6) : "#64748b" }}
-            >
-              © {new Date().getFullYear()} WealthWise. All rights reserved.
-            </Typography>
-            <Box sx={{ display: "flex", gap: 4 }}>
-              {["Privacy", "Terms", "Contact"].map((item) => (
-                <Typography
-                  key={item}
-                  variant="body2"
-                  sx={{
-                    color: isDark ? alpha("#ffffff", 0.6) : "#64748b",
-                    cursor: "pointer",
-                    transition: "color 0.2s",
-                    "&:hover": { color: "#fbbf24" },
-                  }}
-                >
-                  {item}
-                </Typography>
-              ))}
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+      <Footer />
 
       {/* Auth Modals */}
       <LoginModal

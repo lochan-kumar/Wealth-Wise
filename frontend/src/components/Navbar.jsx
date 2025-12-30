@@ -31,11 +31,19 @@ const Navbar = () => {
   const isDark = mode === "dark";
 
   const handleOpenLogin = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
     setRegisterOpen(false);
     setLoginOpen(true);
   };
 
   const handleOpenRegister = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
     setLoginOpen(false);
     setRegisterOpen(true);
   };

@@ -258,9 +258,7 @@ const RegisterModal = ({ open, onClose, onSwitchToLogin }) => {
             onChange={handlePasswordChange}
             required
             error={!!passwordError}
-            helperText={
-              passwordError || "8+ chars, 1 upper, 1 lower, 1 number, 1 special"
-            }
+            helperText={passwordError}
             sx={{
               mb: 2,
               "& .MuiInputLabel-root": {

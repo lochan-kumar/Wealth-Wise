@@ -173,7 +173,6 @@ const DashboardLayout = () => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        
       }}
     >
       <Toolbar>
@@ -316,350 +315,368 @@ const DashboardLayout = () => {
     <Box
       sx={{
         display: "flex",
+        flexDirection: "column",
         minHeight: "100vh",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Gradient Background */}
+      {/* Dashboard content wrapper */}
       <Box
         sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: -1,
-          background: isDark
-            ? "linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)"
-            : "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f8fafc 100%)",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: "-50%",
-            left: "-50%",
-            width: "200%",
-            height: "200%",
-            background: isDark
-              ? "radial-gradient(ellipse at 20% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.12) 0%, transparent 50%)"
-              : "radial-gradient(ellipse at 20% 80%, rgba(5, 150, 105, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%)",
-            animation: "pulse 15s ease-in-out infinite",
-          },
-          "@keyframes pulse": {
-            "0%, 100%": { transform: "translate(0, 0)" },
-            "50%": { transform: "translate(-5%, -5%)" },
-          },
-        }}
-      />
-
-      {/* Floating Orbs */}
-      <Box
-        sx={{
-          position: "fixed",
-          top: "10%",
-          right: "10%",
-          width: 300,
-          height: 300,
-          borderRadius: "50%",
-          background: isDark
-            ? "radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, transparent 70%)",
-          filter: "blur(20px)",
-          animation: "float 8s ease-in-out infinite",
-          zIndex: 0,
-          pointerEvents: "none",
-          "@keyframes float": {
-            "0%, 100%": { transform: "translateY(0)" },
-            "50%": { transform: "translateY(-30px)" },
-          },
-        }}
-      />
-      <Box
-        sx={{
-          position: "fixed",
-          bottom: "20%",
-          left: "30%",
-          width: 200,
-          height: 200,
-          borderRadius: "50%",
-          background: isDark
-            ? "radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%)",
-          filter: "blur(15px)",
-          animation: "float 10s ease-in-out infinite reverse",
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      />
-
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
-          bgcolor: isDark ? alpha("#1e293b", 0.8) : "rgba(240, 253, 244, 0.85)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          color: isDark ? "#f8fafc" : "#1e293b",
-          borderBottom: `3px solid ${
-            isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
-          }`,
-          borderRadius: 0,
+          display: "flex",
+          flex: 1,
+          position: "relative",
         }}
       >
-        <Toolbar>
-          <IconButton
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: "none" } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            {menuItems.find((item) => item.path === location.pathname)?.text ||
-              "Dashboard"}
-          </Typography>
-          <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
-            <Avatar
-              sx={{
-                bgcolor: "transparent",
-                border: "2px solid",
-                borderColor: "primary.main",
-                color: "primary.main",
-                width: 38,
-                height: 38,
-                fontWeight: 600,
-                borderRadius: 1,
+        {/* Gradient Background */}
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: -1,
+            background: isDark
+              ? "linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)"
+              : "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f8fafc 100%)",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: "-50%",
+              left: "-50%",
+              width: "200%",
+              height: "200%",
+              background: isDark
+                ? "radial-gradient(ellipse at 20% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.12) 0%, transparent 50%)"
+                : "radial-gradient(ellipse at 20% 80%, rgba(5, 150, 105, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%)",
+              animation: "pulse 15s ease-in-out infinite",
+            },
+            "@keyframes pulse": {
+              "0%, 100%": { transform: "translate(0, 0)" },
+              "50%": { transform: "translate(-5%, -5%)" },
+            },
+          }}
+        />
+
+        {/* Floating Orbs */}
+        <Box
+          sx={{
+            position: "fixed",
+            top: "10%",
+            right: "10%",
+            width: 300,
+            height: 300,
+            borderRadius: "50%",
+            background: isDark
+              ? "radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, transparent 70%)",
+            filter: "blur(20px)",
+            animation: "float 8s ease-in-out infinite",
+            zIndex: 0,
+            pointerEvents: "none",
+            "@keyframes float": {
+              "0%, 100%": { transform: "translateY(0)" },
+              "50%": { transform: "translateY(-30px)" },
+            },
+          }}
+        />
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: "20%",
+            left: "30%",
+            width: 200,
+            height: 200,
+            borderRadius: "50%",
+            background: isDark
+              ? "radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%)",
+            filter: "blur(15px)",
+            animation: "float 10s ease-in-out infinite reverse",
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
+
+        <AppBar
+          position="fixed"
+          elevation={0}
+          sx={{
+            width: { md: `calc(100% - ${drawerWidth}px)` },
+            ml: { md: `${drawerWidth}px` },
+            bgcolor: isDark
+              ? alpha("#1e293b", 0.8)
+              : "rgba(240, 253, 244, 0.85)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            color: isDark ? "#f8fafc" : "#1e293b",
+            borderBottom: `3px solid ${
+              isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
+            }`,
+            borderRadius: 0,
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2, display: { md: "none" } }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
+              {menuItems.find((item) => item.path === location.pathname)
+                ?.text || "Dashboard"}
+            </Typography>
+            <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
+              <Avatar
+                sx={{
+                  bgcolor: "transparent",
+                  border: "2px solid",
+                  borderColor: "primary.main",
+                  color: "primary.main",
+                  width: 38,
+                  height: 38,
+                  fontWeight: 600,
+                  borderRadius: 1,
+                }}
+              >
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </Avatar>
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  boxShadow: 3,
+                  borderRadius: 1,
+                },
               }}
             >
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </Avatar>
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            transformOrigin={{ horizontal: "right", vertical: "top" }}
-            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-            PaperProps={{
-              sx: {
-                mt: 1,
-                boxShadow: 3,
-                borderRadius: 1,
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigate("/dashboard/profile");
+                }}
+              >
+                <Person sx={{ mr: 1.5 }} /> Profile
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={handleLogout}>
+                <Logout sx={{ mr: 1.5 }} /> Logout
+              </MenuItem>
+            </Menu>
+          </Toolbar>
+        </AppBar>
+
+        <Box
+          component="nav"
+          sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        >
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              display: { xs: "block", md: "none" },
+              "& .MuiDrawer-paper": {
+                width: drawerWidth,
+                borderRadius: 0,
+                bgcolor: isDark
+                  ? alpha("#1e293b", 0.95)
+                  : "rgba(240, 253, 244, 0.95)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                borderRight: `3px solid ${
+                  isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
+                }`,
               },
             }}
           >
-            <MenuItem
-              onClick={() => {
-                handleMenuClose();
-                navigate("/dashboard/profile");
-              }}
+            {drawer}
+          </Drawer>
+          <Drawer
+            variant="permanent"
+            sx={{
+              display: { xs: "none", md: "block" },
+              "& .MuiDrawer-paper": {
+                width: drawerWidth,
+                borderRadius: 0,
+                bgcolor: isDark
+                  ? alpha("#1e293b", 0.8)
+                  : "rgba(240, 253, 244, 0.85)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                borderRight: `3px solid ${
+                  isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
+                }`,
+              },
+            }}
+            open
+          >
+            {drawer}
+          </Drawer>
+        </Box>
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            width: { md: `calc(100% - ${drawerWidth}px)` },
+            mt: 8,
+            bgcolor: "transparent",
+            minHeight: "calc(100vh - 64px)",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          <Outlet />
+        </Box>
+
+        {/* Global FAB for Quick Add - hidden on Transactions page */}
+        {showFab && (
+          <Fab
+            color="primary"
+            aria-label="add transaction"
+            sx={{ position: "fixed", bottom: 24, right: 24, zIndex: 1200 }}
+            onClick={() => setDialogOpen(true)}
+          >
+            <Add />
+          </Fab>
+        )}
+
+        {/* Quick Add Dialog */}
+        <Dialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Quick Add Transaction</DialogTitle>
+          <DialogContent>
+            <Box
+              sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}
             >
-              <Person sx={{ mr: 1.5 }} /> Profile
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <Logout sx={{ mr: 1.5 }} /> Logout
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-
-      <Box
-        component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-      >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              borderRadius: 0,
-              bgcolor: isDark
-                ? alpha("#1e293b", 0.95)
-                : "rgba(240, 253, 244, 0.95)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              borderRight: `3px solid ${
-                isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
-              }`,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: "none", md: "block" },
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              borderRadius: 0,
-              bgcolor: isDark
-                ? alpha("#1e293b", 0.8)
-                : "rgba(240, 253, 244, 0.85)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              borderRight: `3px solid ${
-                isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
-              }`,
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
-          bgcolor: "transparent",
-          minHeight: "calc(100vh - 64px)",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <Outlet />
-      </Box>
-
-      {/* Global FAB for Quick Add - hidden on Transactions page */}
-      {showFab && (
-        <Fab
-          color="primary"
-          aria-label="add transaction"
-          sx={{ position: "fixed", bottom: 24, right: 24 }}
-          onClick={() => setDialogOpen(true)}
-        >
-          <Add />
-        </Fab>
-      )}
-
-      {/* Quick Add Dialog */}
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Quick Add Transaction</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Account</InputLabel>
-              <Select
-                value={form.account}
-                label="Account"
-                onChange={(e) => setForm({ ...form, account: e.target.value })}
-              >
-                {accounts.map((acc) => (
-                  <MenuItem key={acc._id} value={acc._id}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        width: "100%",
-                      }}
-                    >
-                      <span>{acc.name}</span>
-                      <span
-                        style={{
-                          color: acc.balance >= 0 ? "#16a34a" : "#dc2626",
-                          fontWeight: 600,
+              <FormControl fullWidth>
+                <InputLabel>Account</InputLabel>
+                <Select
+                  value={form.account}
+                  label="Account"
+                  onChange={(e) =>
+                    setForm({ ...form, account: e.target.value })
+                  }
+                >
+                  {accounts.map((acc) => (
+                    <MenuItem key={acc._id} value={acc._id}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          width: "100%",
                         }}
                       >
-                        ₹{(acc.balance || 0).toLocaleString()}
-                      </span>
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={form.type}
-                label="Type"
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-              >
-                <MenuItem value="expense">Expense</MenuItem>
-                <MenuItem value="income">Income</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Amount"
-              type="number"
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">₹</InputAdornment>
-                ),
-              }}
-            />
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={form.category}
-                label="Category"
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-              >
-                {categories.map((cat) => (
-                  <MenuItem key={cat} value={cat}>
-                    {cat}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Payee"
-              value={form.payee}
-              onChange={(e) => setForm({ ...form, payee: e.target.value })}
-              placeholder="Who did you pay or receive from?"
-            />
-            <TextField
-              fullWidth
-              label="Description (Optional)"
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              placeholder="Add notes about this transaction"
-              multiline
-              rows={2}
-            />
-            <TextField
-              fullWidth
-              label="Date & Time"
-              type="datetime-local"
-              value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleQuickAdd}
-            disabled={!form.amount || !form.account}
-          >
-            Add Transaction
-          </Button>
-        </DialogActions>
-      </Dialog>
+                        <span>{acc.name}</span>
+                        <span
+                          style={{
+                            color: acc.balance >= 0 ? "#16a34a" : "#dc2626",
+                            fontWeight: 600,
+                          }}
+                        >
+                          ₹{(acc.balance || 0).toLocaleString()}
+                        </span>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={form.type}
+                  label="Type"
+                  onChange={(e) => setForm({ ...form, type: e.target.value })}
+                >
+                  <MenuItem value="expense">Expense</MenuItem>
+                  <MenuItem value="income">Income</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Amount"
+                type="number"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">₹</InputAdornment>
+                  ),
+                }}
+              />
+              <FormControl fullWidth>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={form.category}
+                  label="Category"
+                  onChange={(e) =>
+                    setForm({ ...form, category: e.target.value })
+                  }
+                >
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Payee"
+                value={form.payee}
+                onChange={(e) => setForm({ ...form, payee: e.target.value })}
+                placeholder="Who did you pay or receive from?"
+              />
+              <TextField
+                fullWidth
+                label="Description (Optional)"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                placeholder="Add notes about this transaction"
+                multiline
+                rows={2}
+              />
+              <TextField
+                fullWidth
+                label="Date & Time"
+                type="datetime-local"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button
+              variant="contained"
+              onClick={handleQuickAdd}
+              disabled={!form.amount || !form.account}
+            >
+              Add Transaction
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </Box>
   );
 };
