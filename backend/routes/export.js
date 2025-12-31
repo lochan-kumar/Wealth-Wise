@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   exportToExcel,
   exportToPDF,
+  generateSpendingReport,
 } = require("../controllers/exportController");
 const { protect } = require("../middleware/auth");
 
@@ -75,5 +76,40 @@ router.get("/excel", exportToExcel);
  *               format: binary
  */
 router.get("/pdf", exportToPDF);
+
+/**
+ * @swagger
+ * /api/export/spending-report:
+ *   get:
+ *     summary: Generate spending insights report
+ *     tags: [Export]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: reportType
+ *         schema:
+ *           type: string
+ *           enum: [summary, category, full]
+ *     responses:
+ *       200:
+ *         description: PDF spending report download
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
+router.get("/spending-report", generateSpendingReport);
 
 module.exports = router;

@@ -29,6 +29,7 @@ import {
   TableChart,
   DeleteForever,
   Warning,
+  Assessment,
 } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -36,6 +37,7 @@ import {
   exportToExcel,
   exportToPDF,
   deleteAllTransactions,
+  generateSpendingReport,
 } from "../services/api";
 import { useToast } from "../context/ToastContext";
 
@@ -89,6 +91,15 @@ const ProfilePage = () => {
     startDate: "",
     endDate: "",
   });
+
+  // Custom Report form
+  const [reportForm, setReportForm] = useState({
+    reportType: "full",
+    dateRange: "thisMonth",
+    startDate: "",
+    endDate: "",
+  });
+  const [reportLoading, setReportLoading] = useState(false);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -157,6 +168,72 @@ const ProfilePage = () => {
       toast.error(error.response?.data?.message || "Error exporting data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    setReportLoading(true);
+    try {
+      // Calculate date range
+      let startDate, endDate;
+      const now = new Date();
+
+      switch (reportForm.dateRange) {
+        case "thisMonth":
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = now;
+          break;
+        case "lastMonth":
+          startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+          break;
+        case "last3Months":
+          startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+          endDate = now;
+          break;
+        case "last6Months":
+          startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+          endDate = now;
+          break;
+        case "thisYear":
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = now;
+          break;
+        case "custom":
+          startDate = reportForm.startDate
+            ? new Date(reportForm.startDate)
+            : new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = reportForm.endDate ? new Date(reportForm.endDate) : now;
+          break;
+        default:
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = now;
+      }
+
+      const response = await generateSpendingReport({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        reportType: reportForm.reportType,
+      });
+
+      // Download the PDF
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `spending_report_${new Date().toISOString().split("T")[0]}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Report generated successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error generating report");
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -393,6 +470,135 @@ const ProfilePage = () => {
                 Leave dates empty to export all transactions. The file will
                 download automatically.
               </Alert>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Custom Reports */}
+        <Grid size={{ xs: 12 }}>
+          <Card
+            sx={{
+              background:
+                "linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.03) 100%)",
+              borderLeft: "4px solid #8b5cf6",
+            }}
+          >
+            <CardContent>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}
+              >
+                <Assessment sx={{ color: "#8b5cf6" }} />
+                <Typography variant="h6">Custom Spending Reports</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Generate detailed PDF reports with spending insights, category
+                breakdowns, budget analysis, and personalized financial tips.
+              </Typography>
+              <Grid container spacing={2} alignItems="flex-end">
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Report Type</InputLabel>
+                    <Select
+                      value={reportForm.reportType}
+                      label="Report Type"
+                      onChange={(e) =>
+                        setReportForm({
+                          ...reportForm,
+                          reportType: e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value="full">Full Report</MenuItem>
+                      <MenuItem value="summary">Summary Only</MenuItem>
+                      <MenuItem value="category">Category Analysis</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Date Range</InputLabel>
+                    <Select
+                      value={reportForm.dateRange}
+                      label="Date Range"
+                      onChange={(e) =>
+                        setReportForm({
+                          ...reportForm,
+                          dateRange: e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value="thisMonth">This Month</MenuItem>
+                      <MenuItem value="lastMonth">Last Month</MenuItem>
+                      <MenuItem value="last3Months">Last 3 Months</MenuItem>
+                      <MenuItem value="last6Months">Last 6 Months</MenuItem>
+                      <MenuItem value="thisYear">This Year</MenuItem>
+                      <MenuItem value="custom">Custom Range</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                {reportForm.dateRange === "custom" && (
+                  <>
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="Start Date"
+                        type="date"
+                        value={reportForm.startDate}
+                        onChange={(e) =>
+                          setReportForm({
+                            ...reportForm,
+                            startDate: e.target.value,
+                          })
+                        }
+                        slotProps={{ inputLabel: { shrink: true } }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="End Date"
+                        type="date"
+                        value={reportForm.endDate}
+                        onChange={(e) =>
+                          setReportForm({
+                            ...reportForm,
+                            endDate: e.target.value,
+                          })
+                        }
+                        slotProps={{ inputLabel: { shrink: true } }}
+                      />
+                    </Grid>
+                  </>
+                )}
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: reportForm.dateRange === "custom" ? 2 : 3,
+                  }}
+                >
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    onClick={handleGenerateReport}
+                    disabled={reportLoading}
+                    startIcon={
+                      reportLoading ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        <PictureAsPdf />
+                      )
+                    }
+                    sx={{
+                      bgcolor: "#8b5cf6",
+                      "&:hover": { bgcolor: "#7c3aed" },
+                    }}
+                  >
+                    Generate Report
+                  </Button>
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>

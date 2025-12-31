@@ -84,8 +84,16 @@ const getRandomAmount = (category, type = "expense") => {
 };
 
 // Generate random date within specified days (default 365 days = 1 year)
-const getRandomDate = (daysSpan = 365) => {
+// Ensures some transactions are in the current month for demo purposes
+const getRandomDate = (daysSpan = 365, includeRecent = true) => {
   const now = new Date();
+
+  // 30% chance to get a date within the last 30 days (current month bias)
+  if (includeRecent && Math.random() < 0.3) {
+    const daysAgo = Math.floor(Math.random() * 30); // Within last 30 days
+    return new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+  }
+
   const daysAgo = Math.floor(Math.random() * daysSpan);
   return new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
 };

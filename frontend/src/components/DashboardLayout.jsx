@@ -125,8 +125,17 @@ const DashboardLayout = () => {
   const { mode, toggleTheme } = useThemeMode();
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Persist sidebar state in localStorage
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem("sidebarCollapsed");
+    return saved === "true";
+  });
   const [anchorEl, setAnchorEl] = useState(null);
+
+  // Save sidebar state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("sidebarCollapsed", sidebarCollapsed.toString());
+  }, [sidebarCollapsed]);
 
   const drawerWidth = sidebarCollapsed
     ? drawerWidthCollapsed
@@ -266,21 +275,24 @@ const DashboardLayout = () => {
               <path d="M172 226L256 148L256 266L172 226Z" fill="#92400E" />
             </svg>
           </Box>
-          {!sidebarCollapsed && (
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 700,
-                background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                letterSpacing: "-0.5px",
-              }}
-            >
-              WealthWise
-            </Typography>
-          )}
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              letterSpacing: "-0.5px",
+              opacity: sidebarCollapsed ? 0 : 1,
+              width: sidebarCollapsed ? 0 : "auto",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              transition: "opacity 0.3s ease-in-out, width 0.3s ease-in-out",
+            }}
+          >
+            WealthWise
+          </Typography>
         </Box>
       </Toolbar>
       <Divider
@@ -339,7 +351,17 @@ const DashboardLayout = () => {
                   {item.icon}
                 </Box>
               </ListItemIcon>
-              {!sidebarCollapsed && <ListItemText primary={item.text} />}
+              <ListItemText
+                primary={item.text}
+                sx={{
+                  opacity: sidebarCollapsed ? 0 : 1,
+                  width: sidebarCollapsed ? 0 : "auto",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  transition:
+                    "opacity 0.3s ease-in-out, width 0.3s ease-in-out",
+                }}
+              />
             </ListItemButton>
           </ListItem>
         ))}
@@ -396,11 +418,16 @@ const DashboardLayout = () => {
               {mode === "dark" ? <LightMode /> : <DarkMode />}
             </Box>
           </ListItemIcon>
-          {!sidebarCollapsed && (
-            <ListItemText
-              primary={mode === "dark" ? "Light Mode" : "Dark Mode"}
-            />
-          )}
+          <ListItemText
+            primary={mode === "dark" ? "Light Mode" : "Dark Mode"}
+            sx={{
+              opacity: sidebarCollapsed ? 0 : 1,
+              width: sidebarCollapsed ? 0 : "auto",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              transition: "opacity 0.3s ease-in-out, width 0.3s ease-in-out",
+            }}
+          />
         </ListItemButton>
 
         {/* Collapse Toggle - Desktop only */}
@@ -440,7 +467,16 @@ const DashboardLayout = () => {
                 {sidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
               </Box>
             </ListItemIcon>
-            {!sidebarCollapsed && <ListItemText primary="Collapse" />}
+            <ListItemText
+              primary="Collapse"
+              sx={{
+                opacity: sidebarCollapsed ? 0 : 1,
+                width: sidebarCollapsed ? 0 : "auto",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                transition: "opacity 0.3s ease-in-out, width 0.3s ease-in-out",
+              }}
+            />
           </ListItemButton>
         )}
       </Box>
@@ -654,6 +690,8 @@ const DashboardLayout = () => {
                 borderRight: `3px solid ${
                   isDark ? alpha("#ffffff", 0.1) : "rgba(5, 150, 105, 0.25)"
                 }`,
+                transition: "width 0.3s ease-in-out",
+                overflowX: "hidden",
               },
             }}
             open
@@ -673,6 +711,7 @@ const DashboardLayout = () => {
             minHeight: "calc(100vh - 64px)",
             position: "relative",
             zIndex: 1,
+            transition: "width 0.3s ease-in-out, margin 0.3s ease-in-out",
           }}
         >
           <Outlet />

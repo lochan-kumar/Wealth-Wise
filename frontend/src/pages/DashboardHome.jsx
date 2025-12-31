@@ -217,11 +217,20 @@ const DashboardHome = () => {
       const accountsList = accountsRes.data.data || [];
       setAccounts(accountsList);
 
-      // Calculate per-account summary
+      // Calculate per-account summary for THIS MONTH ONLY
       const allTx = allTransactionsRes.data.data || [];
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      // Filter transactions to current month only
+      const thisMonthTx = allTx.filter((tx) => {
+        const txDate = new Date(tx.date);
+        return txDate >= startOfMonth;
+      });
+
       const accSummary = {};
       accountsList.forEach((acc) => {
-        const accTransactions = allTx.filter(
+        const accTransactions = thisMonthTx.filter(
           (tx) => tx.account === acc._id || tx.account?._id === acc._id
         );
         const income = accTransactions
@@ -300,11 +309,6 @@ const DashboardHome = () => {
           width: "100%",
           background: gradientBg,
           borderLeft: `4px solid ${color}`,
-          transition: "all 0.3s ease",
-          "&:hover": {
-            transform: "translateY(-2px)",
-            boxShadow: `0 8px 25px ${color}25`,
-          },
         }}
       >
         <CardContent sx={{ pb: isExpanded ? 1 : 2, pt: 3 }}>
@@ -461,8 +465,8 @@ const DashboardHome = () => {
         </Box>
         <Box sx={{ flex: 1, width: "100%" }}>
           <SummaryCard
-            title="Net Balance"
-            amount={summary?.thisMonth?.netBalance}
+            title="Total Balance"
+            amount={accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0)}
             icon={<AccountBalance />}
             color="#1976d2"
             cardType="net"

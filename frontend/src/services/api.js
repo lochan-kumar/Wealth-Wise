@@ -106,3 +106,10 @@ export const exportToPDF = (params) =>
     params,
     responseType: "blob",
   });
+
+// Custom Reports
+export const generateSpendingReport = (params) =>
+  axios.get(`${API_URL}/export/spending-report`, {
+    params,
+    responseType: "blob",
+  });

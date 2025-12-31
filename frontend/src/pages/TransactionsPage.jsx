@@ -292,11 +292,6 @@ const TransactionsPage = () => {
                 0.02
               )} 100%)`,
           borderLeft: `4px solid ${color}`,
-          transition: "all 0.3s ease",
-          "&:hover": {
-            transform: "translateX(4px)",
-            boxShadow: `0 4px 20px ${alpha(color, 0.2)}`,
-          },
         }}
       >
         <CardContent sx={{ py: 2, "&:last-child": { pb: 2 } }}>

@@ -1,4 +1,5 @@
 const Transaction = require("../models/Transaction");
+const mongoose = require("mongoose");
 
 // @desc    Get dashboard summary
 // @route   GET /api/dashboard/summary
@@ -7,12 +8,13 @@ const getSummary = async (req, res) => {
   try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const userId = new mongoose.Types.ObjectId(req.user.id);
 
     // Get this month's summary
     const monthlyData = await Transaction.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: userId,
           date: { $gte: startOfMonth },
         },
       },
@@ -27,7 +29,7 @@ const getSummary = async (req, res) => {
 
     // Get all-time summary
     const allTimeData = await Transaction.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: { user: userId } },
       {
         $group: {
           _id: "$type",
