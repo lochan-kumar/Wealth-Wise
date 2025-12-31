@@ -112,7 +112,9 @@ const deleteBudget = async (req, res) => {
 // @access  Private
 const getBudgetStatus = async (req, res) => {
   try {
+    console.log("Getting budget status for user:", req.user.id);
     const budgets = await Budget.find({ user: req.user.id });
+    console.log("Found budgets:", budgets.length, budgets);
 
     const statusData = await Promise.all(
       budgets.map(async (budget) => {

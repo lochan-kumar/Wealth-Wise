@@ -45,6 +45,8 @@ import {
   Add,
   Repeat,
   Handshake,
+  ChevronLeft,
+  ChevronRight,
 } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { useThemeMode } from "../context/ThemeContext";
@@ -52,7 +54,8 @@ import { createTransaction, getAccounts } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import { getISTDateTime } from "../utils/dateUtils";
 
-const drawerWidth = 260;
+const drawerWidthExpanded = 260;
+const drawerWidthCollapsed = 72;
 
 const categories = [
   "Food",
@@ -68,14 +71,49 @@ const categories = [
 ];
 
 const menuItems = [
-  { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
-  { text: "Transactions", icon: <Receipt />, path: "/dashboard/transactions" },
-  { text: "Budgets", icon: <Savings />, path: "/dashboard/budgets" },
-  { text: "Accounts", icon: <AccountBalance />, path: "/dashboard/accounts" },
-  { text: "Goals", icon: <Flag />, path: "/dashboard/goals" },
-  { text: "Recurring", icon: <Repeat />, path: "/dashboard/recurring" },
-  { text: "Debts", icon: <Handshake />, path: "/dashboard/debts" },
-  { text: "Profile", icon: <Person />, path: "/dashboard/profile" },
+  {
+    text: "Dashboard",
+    icon: <Dashboard />,
+    path: "/dashboard",
+    color: "#10b981",
+  },
+  {
+    text: "Transactions",
+    icon: <Receipt />,
+    path: "/dashboard/transactions",
+    color: "#f59e0b",
+  },
+  {
+    text: "Budgets",
+    icon: <Savings />,
+    path: "/dashboard/budgets",
+    color: "#8b5cf6",
+  },
+  {
+    text: "Accounts",
+    icon: <AccountBalance />,
+    path: "/dashboard/accounts",
+    color: "#3b82f6",
+  },
+  { text: "Goals", icon: <Flag />, path: "/dashboard/goals", color: "#ec4899" },
+  {
+    text: "Recurring",
+    icon: <Repeat />,
+    path: "/dashboard/recurring",
+    color: "#14b8a6",
+  },
+  {
+    text: "Debts",
+    icon: <Handshake />,
+    path: "/dashboard/debts",
+    color: "#f97316",
+  },
+  {
+    text: "Profile",
+    icon: <Person />,
+    path: "/dashboard/profile",
+    color: "#6366f1",
+  },
 ];
 
 const DashboardLayout = () => {
@@ -87,7 +125,12 @@ const DashboardLayout = () => {
   const { mode, toggleTheme } = useThemeMode();
 
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const drawerWidth = sidebarCollapsed
+    ? drawerWidthCollapsed
+    : drawerWidthExpanded;
 
   // Quick Add Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -175,7 +218,9 @@ const DashboardLayout = () => {
         flexDirection: "column",
       }}
     >
-      <Toolbar>
+      <Toolbar
+        sx={{ justifyContent: sidebarCollapsed ? "center" : "flex-start" }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -221,19 +266,21 @@ const DashboardLayout = () => {
               <path d="M172 226L256 148L256 266L172 226Z" fill="#92400E" />
             </svg>
           </Box>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 700,
-              background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              letterSpacing: "-0.5px",
-            }}
-          >
-            WealthWise
-          </Typography>
+          {!sidebarCollapsed && (
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                letterSpacing: "-0.5px",
+              }}
+            >
+              WealthWise
+            </Typography>
+          )}
         </Box>
       </Toolbar>
       <Divider
@@ -244,7 +291,7 @@ const DashboardLayout = () => {
           borderWidth: 1.5,
         }}
       />
-      <List sx={{ flex: 1, px: 2, py: 1 }}>
+      <List sx={{ flex: 1, px: sidebarCollapsed ? 1 : 2, py: 1 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
@@ -255,25 +302,44 @@ const DashboardLayout = () => {
               }}
               sx={{
                 borderRadius: 2,
+                justifyContent: sidebarCollapsed ? "center" : "flex-start",
+                px: sidebarCollapsed ? 1.5 : 2,
                 color: isDark ? "#f8fafc" : "#334155",
-                "& .MuiListItemIcon-root": {
-                  color: isDark ? "#94a3b8" : "#64748b",
-                },
                 "&:hover": {
                   bgcolor: isDark
                     ? alpha("#ffffff", 0.1)
                     : alpha("#000000", 0.05),
                 },
                 "&.Mui-selected": {
-                  bgcolor: "primary.main",
-                  color: "white",
-                  "& .MuiListItemIcon-root": { color: "white" },
-                  "&:hover": { bgcolor: "primary.dark" },
+                  bgcolor: `${item.color}20`,
+                  color: item.color,
+                  "&:hover": { bgcolor: `${item.color}30` },
                 },
               }}
+              title={sidebarCollapsed ? item.text : ""}
             >
-              <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
+              <ListItemIcon
+                sx={{
+                  minWidth: sidebarCollapsed ? 0 : 40,
+                  color:
+                    location.pathname === item.path ? item.color : item.color,
+                  mr: sidebarCollapsed ? 0 : 1.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: 2,
+                    bgcolor: `${item.color}15`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </Box>
+              </ListItemIcon>
+              {!sidebarCollapsed && <ListItemText primary={item.text} />}
             </ListItemButton>
           </ListItem>
         ))}
@@ -286,27 +352,97 @@ const DashboardLayout = () => {
           borderWidth: 1.5,
         }}
       />
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: sidebarCollapsed ? 1 : 2 }}>
+        {/* Theme Toggle */}
         <ListItemButton
           onClick={toggleTheme}
           sx={{
             borderRadius: 2,
+            justifyContent: sidebarCollapsed ? "center" : "flex-start",
+            px: sidebarCollapsed ? 1.5 : 2,
+            mb: 1,
             color: isDark ? "#f8fafc" : "#334155",
-            "& .MuiListItemIcon-root": {
-              color: isDark ? "#94a3b8" : "#64748b",
-            },
             "&:hover": {
               bgcolor: isDark ? alpha("#ffffff", 0.1) : alpha("#000000", 0.05),
             },
           }}
+          title={
+            sidebarCollapsed
+              ? mode === "dark"
+                ? "Light Mode"
+                : "Dark Mode"
+              : ""
+          }
         >
-          <ListItemIcon sx={{ minWidth: 40 }}>
-            {mode === "dark" ? <LightMode /> : <DarkMode />}
+          <ListItemIcon
+            sx={{
+              minWidth: sidebarCollapsed ? 0 : 40,
+              mr: sidebarCollapsed ? 0 : 1.5,
+              color: isDark ? "#fbbf24" : "#6366f1",
+            }}
+          >
+            <Box
+              sx={{
+                p: 1,
+                borderRadius: 2,
+                bgcolor: isDark
+                  ? "rgba(251, 191, 36, 0.15)"
+                  : "rgba(99, 102, 241, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {mode === "dark" ? <LightMode /> : <DarkMode />}
+            </Box>
           </ListItemIcon>
-          <ListItemText
-            primary={mode === "dark" ? "Light Mode" : "Dark Mode"}
-          />
+          {!sidebarCollapsed && (
+            <ListItemText
+              primary={mode === "dark" ? "Light Mode" : "Dark Mode"}
+            />
+          )}
         </ListItemButton>
+
+        {/* Collapse Toggle - Desktop only */}
+        {!isMobile && (
+          <ListItemButton
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            sx={{
+              borderRadius: 2,
+              justifyContent: sidebarCollapsed ? "center" : "flex-start",
+              px: sidebarCollapsed ? 1.5 : 2,
+              color: isDark ? "#f8fafc" : "#334155",
+              "&:hover": {
+                bgcolor: isDark
+                  ? alpha("#ffffff", 0.1)
+                  : alpha("#000000", 0.05),
+              },
+            }}
+            title={sidebarCollapsed ? "Expand Sidebar" : ""}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: sidebarCollapsed ? 0 : 40,
+                mr: sidebarCollapsed ? 0 : 1.5,
+                color: "#64748b",
+              }}
+            >
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  bgcolor: "rgba(100, 116, 139, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {sidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
+              </Box>
+            </ListItemIcon>
+            {!sidebarCollapsed && <ListItemText primary="Collapse" />}
+          </ListItemButton>
+        )}
       </Box>
     </Box>
   );

@@ -102,11 +102,18 @@ export const lightTheme = createTheme({
         root: {
           borderRadius: 16,
           background:
-            "linear-gradient(135deg, rgba(240, 253, 244, 0.9) 0%, rgba(236, 253, 245, 0.85) 100%)",
+            "linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.04) 50%, rgba(255, 255, 255, 0.95) 100%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(5, 150, 105, 0.25)",
-          boxShadow: "0 4px 20px 0 rgba(5, 150, 105, 0.08)",
+          borderLeft: "4px solid #10b981",
+          boxShadow:
+            "0 4px 30px rgba(5, 150, 105, 0.12), inset 0 0 60px rgba(16, 185, 129, 0.05)",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            transform: "translateY(-3px)",
+            boxShadow:
+              "0 12px 40px rgba(5, 150, 105, 0.18), inset 0 0 60px rgba(16, 185, 129, 0.08)",
+          },
         },
       },
     },
@@ -387,11 +394,19 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 16,
-          backgroundColor: "rgba(30, 41, 59, 0.7)",
+          background:
+            "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 50%, rgba(30, 41, 59, 0.95) 100%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
+          borderLeft: "4px solid #10b981",
+          boxShadow:
+            "0 4px 30px rgba(0, 0, 0, 0.4), inset 0 0 60px rgba(16, 185, 129, 0.05)",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            transform: "translateY(-3px)",
+            boxShadow:
+              "0 12px 40px rgba(0, 0, 0, 0.5), inset 0 0 60px rgba(16, 185, 129, 0.1)",
+          },
         },
       },
     },

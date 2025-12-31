@@ -24,7 +24,8 @@ const updateBudgetSpent = async (userId, category, amount, isAdd = true) => {
 // @access  Private
 const getTransactions = async (req, res) => {
   try {
-    const { type, category, account, startDate, endDate, payee } = req.query;
+    const { type, category, account, startDate, endDate, payee, limit, page } =
+      req.query;
 
     // Build query
     const query = { user: req.user.id };
@@ -39,13 +40,26 @@ const getTransactions = async (req, res) => {
       if (endDate) query.date.$lte = new Date(endDate);
     }
 
+    // Pagination
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 50;
+    const skip = (pageNum - 1) * limitNum;
+
     const transactions = await Transaction.find(query)
       .populate("account", "name type bankName")
-      .sort({ date: -1 });
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    // Get total count for pagination info
+    const total = await Transaction.countDocuments(query);
 
     res.json({
       success: true,
       count: transactions.length,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
       data: transactions,
     });
   } catch (error) {

@@ -83,11 +83,11 @@ const getRandomAmount = (category, type = "expense") => {
   return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
 };
 
-// Generate random date within last 30 days
-const getRandomDate = () => {
+// Generate random date within specified days (default 365 days = 1 year)
+const getRandomDate = (daysSpan = 365) => {
   const now = new Date();
-  const daysAgo = Math.floor(Math.random() * 30);
-  return new Date(now.setDate(now.getDate() - daysAgo));
+  const daysAgo = Math.floor(Math.random() * daysSpan);
+  return new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
 };
 
 // Simulate bank account lookup
@@ -107,8 +107,41 @@ const simulateBankLookup = (accountNumber) => {
 };
 
 // Generate dummy transactions with both income and expense types
-const generateTransactions = (count = 15) => {
+// Options: count (default 100), daysSpan (default 365), userCategories (optional array)
+const generateTransactions = (count = 100, options = {}) => {
+  const { daysSpan = 365, userCategories = [] } = options;
   const transactions = [];
+
+  // Determine expense categories to use
+  const defaultExpenseCategories = [
+    "Food",
+    "Transport",
+    "Shopping",
+    "Bills",
+    "Entertainment",
+    "Health",
+    "Education",
+    "Other",
+  ];
+  const expenseCategories = userCategories
+    .filter((c) => c.type === "expense")
+    .map((c) => c.name);
+  const finalExpenseCategories =
+    expenseCategories.length > 0 ? expenseCategories : defaultExpenseCategories;
+
+  // Determine income categories to use
+  const defaultIncomeCategories = [
+    "Salary",
+    "Freelance",
+    "Interest",
+    "Investment",
+    "Other",
+  ];
+  const incomeCategories = userCategories
+    .filter((c) => c.type === "income")
+    .map((c) => c.name);
+  const finalIncomeCategories =
+    incomeCategories.length > 0 ? incomeCategories : defaultIncomeCategories;
 
   // Generate ~30% income transactions and ~70% expense transactions
   const incomeCount = Math.floor(count * 0.3);
@@ -116,25 +149,34 @@ const generateTransactions = (count = 15) => {
 
   // Generate income transactions
   for (let i = 0; i < incomeCount; i++) {
+    const category =
+      finalIncomeCategories[
+        Math.floor(Math.random() * finalIncomeCategories.length)
+      ];
     const incomeSource =
+      incomeSources.find((s) => s.category === category) ||
       incomeSources[Math.floor(Math.random() * incomeSources.length)];
 
     transactions.push({
       type: "income",
-      amount: getRandomAmount(incomeSource.category, "income"),
+      amount: getRandomAmount(category, "income"),
       payee: incomeSource.name,
-      category: incomeSource.category,
+      category: category,
       description: `${incomeSource.name}`,
-      date: getRandomDate(),
+      date: getRandomDate(daysSpan),
       source: "bank",
     });
   }
 
   // Generate expense transactions
   for (let i = 0; i < expenseCount; i++) {
+    const category =
+      finalExpenseCategories[
+        Math.floor(Math.random() * finalExpenseCategories.length)
+      ];
     const merchantInfo =
+      expenseMerchants.find((m) => m.category === category) ||
       expenseMerchants[Math.floor(Math.random() * expenseMerchants.length)];
-    const category = detectCategory(merchantInfo.name, "");
 
     transactions.push({
       type: "expense",
@@ -142,7 +184,7 @@ const generateTransactions = (count = 15) => {
       payee: merchantInfo.name,
       category: category,
       description: `Payment to ${merchantInfo.name}`,
-      date: getRandomDate(),
+      date: getRandomDate(daysSpan),
       source: "bank",
     });
   }

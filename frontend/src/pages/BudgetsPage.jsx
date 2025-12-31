@@ -26,7 +26,29 @@ import {
   FormControlLabel,
   Avatar,
 } from "@mui/material";
-import { Add, Edit, Delete } from "@mui/icons-material";
+import {
+  Add,
+  Edit,
+  Delete,
+  Receipt,
+  Restaurant,
+  DirectionsCar,
+  ShoppingBag,
+  Movie,
+  LocalHospital,
+  School,
+  MoreHoriz,
+  Home,
+  Flight,
+  Checkroom,
+  FitnessCenter,
+  Pets,
+  CardGiftcard,
+  AttachMoney,
+  Work,
+  Savings,
+  Flag,
+} from "@mui/icons-material";
 import {
   getCategories,
   getCategorySummary,
@@ -50,6 +72,33 @@ const colorOptions = [
   "#f43f5e",
   "#6b7280",
 ];
+
+// Mapping of predefined category names to MUI icons
+const categoryIcons = {
+  Bills: Receipt,
+  Food: Restaurant,
+  Transport: DirectionsCar,
+  Shopping: ShoppingBag,
+  Entertainment: Movie,
+  Health: LocalHospital,
+  Education: School,
+  Other: MoreHoriz,
+  Housing: Home,
+  Travel: Flight,
+  Clothing: Checkroom,
+  Fitness: FitnessCenter,
+  Pets: Pets,
+  Gifts: CardGiftcard,
+  Income: AttachMoney,
+  Salary: Work,
+  Savings: Savings,
+  Goals: Flag,
+};
+
+// Get icon component for a category
+const getCategoryIcon = (categoryName) => {
+  return categoryIcons[categoryName] || null;
+};
 
 const BudgetsPage = () => {
   const [categories, setCategories] = useState([]);
@@ -288,7 +337,12 @@ const BudgetsPage = () => {
                           fontSize: "1rem",
                         }}
                       >
-                        {cat.name.charAt(0).toUpperCase()}
+                        {getCategoryIcon(cat.name)
+                          ? (() => {
+                              const IconComponent = getCategoryIcon(cat.name);
+                              return <IconComponent sx={{ fontSize: 20 }} />;
+                            })()
+                          : cat.name.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
                         <Typography variant="h6">{cat.name}</Typography>

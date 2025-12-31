@@ -112,15 +112,36 @@ const getByCategory = async (req, res) => {
 // @access  Private
 const getByDate = async (req, res) => {
   try {
-    const { days = 30, type } = req.query;
+    const { days = 30, type, period, category, account } = req.query;
+
+    // Calculate start date based on period or days
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(days));
+    if (period === "week") {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (period === "month") {
+      startDate.setDate(1); // Start of current month
+      startDate.setHours(0, 0, 0, 0);
+    } else if (period === "quarter") {
+      startDate.setMonth(startDate.getMonth() - 3);
+    } else if (period === "year") {
+      startDate.setMonth(0, 1); // January 1st of current year
+      startDate.setHours(0, 0, 0, 0);
+    } else {
+      startDate.setDate(startDate.getDate() - parseInt(days));
+    }
 
     const matchStage = {
       user: req.user._id,
       date: { $gte: startDate },
     };
+
+    // Add optional filters
     if (type) matchStage.type = type;
+    if (category && category !== "all") matchStage.category = category;
+    if (account && account !== "all") {
+      const mongoose = require("mongoose");
+      matchStage.account = new mongoose.Types.ObjectId(account);
+    }
 
     const dateData = await Transaction.aggregate([
       { $match: matchStage },

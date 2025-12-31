@@ -1,5 +1,6 @@
 const Account = require("../models/Account");
 const Transaction = require("../models/Transaction");
+const Category = require("../models/Category");
 const { generateTransactions } = require("../utils/bankSimulator");
 
 // @desc    Get all accounts for user
@@ -77,8 +78,17 @@ const linkBankAccount = async (req, res) => {
       isDefault: false,
     });
 
-    // Auto-fetch dummy transactions (mix of income and expense)
-    const dummyTransactions = generateTransactions(12);
+    // Fetch user's categories for generating transactions
+    const userCategories = await Category.find({ user: req.user.id });
+
+    // Auto-fetch dummy transactions (100 transactions spanning 1 year, using user's categories)
+    const dummyTransactions = generateTransactions(100, {
+      daysSpan: 365,
+      userCategories: userCategories.map((c) => ({
+        name: c.name,
+        type: c.type,
+      })),
+    });
 
     // Calculate balance change from transactions
     let balanceChange = 0;
