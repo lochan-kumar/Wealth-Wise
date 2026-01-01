@@ -475,15 +475,25 @@ export const darkTheme = createTheme({
           "& .MuiOutlinedInput-root": {
             borderRadius: 8,
             "& fieldset": {
-              borderColor: "#475569",
+              borderColor: "rgba(16, 185, 129, 0.3)",
+              borderWidth: 1,
             },
             "&:hover fieldset": {
-              borderColor: "#64748b",
+              borderColor: "rgba(16, 185, 129, 0.5)",
             },
             "&.Mui-focused fieldset": {
               borderColor: "#10b981",
               borderWidth: 2,
             },
+          },
+          "& .MuiInputLabel-root": {
+            color: "#94a3b8",
+          },
+          "& .MuiInputLabel-root.Mui-focused": {
+            color: "#10b981",
+          },
+          "& .MuiOutlinedInput-input": {
+            color: "#f8fafc",
           },
         },
       },
@@ -493,14 +503,28 @@ export const darkTheme = createTheme({
         root: {
           borderRadius: 8,
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#475569",
+            borderColor: "rgba(16, 185, 129, 0.3)",
+            borderWidth: 1,
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#64748b",
+            borderColor: "rgba(16, 185, 129, 0.5)",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
             borderColor: "#10b981",
             borderWidth: 2,
+          },
+        },
+        icon: {
+          color: "#94a3b8",
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          color: "#94a3b8",
+          "&.Mui-focused": {
+            color: "#10b981",
           },
         },
       },
@@ -511,10 +535,11 @@ export const darkTheme = createTheme({
           "& .MuiOutlinedInput-root": {
             borderRadius: 8,
             "& fieldset": {
-              borderColor: "#475569",
+              borderColor: "rgba(16, 185, 129, 0.3)",
+              borderWidth: 1,
             },
             "&:hover fieldset": {
-              borderColor: "#64748b",
+              borderColor: "rgba(16, 185, 129, 0.5)",
             },
             "&.Mui-focused fieldset": {
               borderColor: "#10b981",

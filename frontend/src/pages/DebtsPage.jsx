@@ -492,24 +492,7 @@ const DebtsPage = () => {
                             ?.slice()
                             .reverse()
                             .map((tx) => (
-                              <ListItem
-                                key={tx._id}
-                                disableGutters
-                                secondaryAction={
-                                  <IconButton
-                                    edge="end"
-                                    size="small"
-                                    onClick={() =>
-                                      handleDeleteTransaction(
-                                        person._id,
-                                        tx._id
-                                      )
-                                    }
-                                  >
-                                    <Delete fontSize="small" />
-                                  </IconButton>
-                                }
-                              >
+                              <ListItem key={tx._id} disableGutters>
                                 <ListItemIcon sx={{ minWidth: 36 }}>
                                   {getTransactionIcon(tx.type)}
                                 </ListItemIcon>

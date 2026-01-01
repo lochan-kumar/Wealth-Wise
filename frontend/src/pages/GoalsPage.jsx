@@ -91,9 +91,16 @@ const GoalsPage = () => {
     return "";
   };
 
-  const validateProgressAmount = (value) => {
+  const validateProgressAmount = (value, goal) => {
     const num = parseFloat(value);
-    if (value && (isNaN(num) || num < 0)) return "Amount cannot be negative";
+    if (value && (isNaN(num) || num <= 0))
+      return "Amount must be greater than 0";
+    if (goal && value) {
+      const remaining = goal.targetAmount - (goal.currentAmount || 0);
+      if (num > remaining) {
+        return `Amount exceeds remaining goal. You only need ₹${remaining.toLocaleString()} more.`;
+      }
+    }
     return "";
   };
 
@@ -358,13 +365,6 @@ const GoalsPage = () => {
                     >
                       <Edit fontSize="small" />
                     </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDelete(goal._id)}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
                   </Box>
                 </CardContent>
               </Card>
@@ -477,7 +477,7 @@ const GoalsPage = () => {
               onChange={(e) => {
                 const value = e.target.value;
                 setProgressAmount(value);
-                setProgressError(validateProgressAmount(value));
+                setProgressError(validateProgressAmount(value, editingGoal));
               }}
               InputProps={{
                 startAdornment: (
@@ -485,7 +485,15 @@ const GoalsPage = () => {
                 ),
               }}
               error={!!progressError}
-              helperText={progressError}
+              helperText={
+                progressError ||
+                (editingGoal
+                  ? `Remaining: ₹${(
+                      editingGoal.targetAmount -
+                      (editingGoal.currentAmount || 0)
+                    ).toLocaleString()}`
+                  : "")
+              }
             />
             <FormControl fullWidth>
               <InputLabel>Deduct from Account</InputLabel>

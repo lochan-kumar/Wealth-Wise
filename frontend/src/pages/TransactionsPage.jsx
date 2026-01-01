@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -20,7 +20,7 @@ import {
   Select,
   Skeleton,
   Avatar,
-  CircularProgress,
+  Pagination,
   alpha,
   useTheme,
 } from "@mui/material";
@@ -35,6 +35,8 @@ import {
   CalendarToday,
   AccountBalanceWallet,
   Category as CategoryIcon,
+  Flag,
+  Person,
 } from "@mui/icons-material";
 import {
   getTransactions,
@@ -43,6 +45,10 @@ import {
   deleteTransaction,
   getAccounts,
   getCategories,
+  getGoals,
+  updateGoalProgress,
+  getDebtPersons,
+  addDebtTransaction,
 } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import { getISTDateTime } from "../utils/dateUtils";
@@ -70,31 +76,23 @@ const TransactionsPage = () => {
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
   const toast = useToast();
 
+  // Transaction mode state (normal, goal, debt)
+  const [transactionMode, setTransactionMode] = useState("normal");
+  const [goals, setGoals] = useState([]);
+  const [debtPersons, setDebtPersons] = useState([]);
+  const [selectedGoal, setSelectedGoal] = useState("");
+  const [selectedPerson, setSelectedPerson] = useState("");
+  const [debtType, setDebtType] = useState("borrowed");
+
   // Pagination state
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const limit = 20;
-
-  // Intersection Observer ref for infinite scroll
-  const observerRef = useRef();
-  const lastTransactionRef = useCallback(
-    (node) => {
-      if (loadingMore) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMoreTransactions();
-        }
-      });
-      if (node) observerRef.current.observe(node);
-    },
-    [loadingMore, hasMore]
-  );
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const limit = 10;
 
   // Filters
   const [filters, setFilters] = useState({
@@ -126,31 +124,61 @@ const TransactionsPage = () => {
     return "";
   };
 
-  // Check if form is valid
-  const isFormValid = form.account && form.amount && !amountError;
+  // Check if form is valid based on transaction mode
+  const isFormValid = () => {
+    const hasAmount = form.amount && !amountError;
+    if (transactionMode === "goal") {
+      return form.account && selectedGoal && hasAmount;
+    } else if (transactionMode === "debt") {
+      return selectedPerson && hasAmount;
+    }
+    return form.account && hasAmount;
+  };
 
+  // Reset page to 1 when filters change
   useEffect(() => {
-    fetchInitialData();
+    setPage(1);
   }, [filters]);
 
-  const fetchInitialData = async () => {
-    setLoading(true);
-    setPage(1);
-    try {
-      const [txRes, accRes, catRes] = await Promise.all([
-        getTransactions({ ...filters, limit, page: 1 }),
-        getAccounts(),
-        getCategories(),
-      ]);
-      setTransactions(txRes.data.data);
-      setHasMore(txRes.data.data.length >= limit);
-      setAccounts(accRes.data.data);
-      setCategories(catRes.data.data);
-      if (!form.account && accRes.data.data.length > 0) {
-        const defaultAcc =
-          accRes.data.data.find((a) => a.isDefault) || accRes.data.data[0];
-        setForm((prev) => ({ ...prev, account: defaultAcc._id }));
+  useEffect(() => {
+    fetchData();
+  }, [filters, page]);
+
+  useEffect(() => {
+    // Fetch accounts, categories, goals, and debt persons only once on mount
+    const fetchMetadata = async () => {
+      try {
+        const [accRes, catRes, goalsRes, debtsRes] = await Promise.all([
+          getAccounts(),
+          getCategories(),
+          getGoals(),
+          getDebtPersons(),
+        ]);
+        setAccounts(accRes.data.data);
+        setCategories(catRes.data.data);
+        setGoals(goalsRes.data.data.filter((g) => g.status === "active"));
+        setDebtPersons(debtsRes.data.data);
+        if (!form.account && accRes.data.data.length > 0) {
+          const defaultAcc =
+            accRes.data.data.find((a) => a.isDefault) || accRes.data.data[0];
+          setForm((prev) => ({ ...prev, account: defaultAcc._id }));
+        }
+      } catch (error) {
+        console.error("Error fetching metadata:", error);
       }
+    };
+    fetchMetadata();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const txRes = await getTransactions({ ...filters, limit, page });
+      setTransactions(txRes.data.data);
+      // Calculate total pages from response
+      const total = txRes.data.total || txRes.data.data.length;
+      setTotalCount(total);
+      setTotalPages(Math.ceil(total / limit) || 1);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -158,30 +186,17 @@ const TransactionsPage = () => {
     }
   };
 
-  const loadMoreTransactions = async () => {
-    if (loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const txRes = await getTransactions({
-        ...filters,
-        limit,
-        page: nextPage,
-      });
-      const newTransactions = txRes.data.data;
-      setTransactions((prev) => [...prev, ...newTransactions]);
-      setPage(nextPage);
-      setHasMore(newTransactions.length >= limit);
-    } catch (error) {
-      console.error("Error loading more:", error);
-    } finally {
-      setLoadingMore(false);
-    }
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+    // Scroll to top of transactions list
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleOpenDialog = (tx = null) => {
     if (tx) {
+      // Editing mode - only supports normal transactions
       setEditingTx(tx);
+      setTransactionMode("normal");
       setForm({
         account: tx.account?._id || tx.account,
         type: tx.type,
@@ -192,7 +207,9 @@ const TransactionsPage = () => {
         date: new Date(tx.date).toISOString().split("T")[0],
       });
     } else {
+      // New transaction - reset all state
       setEditingTx(null);
+      setTransactionMode("normal");
       const defaultAcc = accounts.find((a) => a.isDefault) || accounts[0];
       setForm({
         account: defaultAcc?._id || "",
@@ -203,6 +220,10 @@ const TransactionsPage = () => {
         description: "",
         date: new Date().toISOString().split("T")[0],
       });
+      setSelectedGoal("");
+      setSelectedPerson("");
+      setDebtType("borrowed");
+      setAmountError("");
     }
     setDialogOpen(true);
   };
@@ -214,20 +235,56 @@ const TransactionsPage = () => {
 
   const handleSubmit = async () => {
     try {
-      const data = {
-        ...form,
-        amount: parseFloat(form.amount),
-      };
+      const amount = parseFloat(form.amount);
 
-      if (editingTx) {
-        await updateTransaction(editingTx._id, data);
-        toast.success("Transaction updated!");
+      if (transactionMode === "goal") {
+        // Goal contribution
+        if (!selectedGoal) {
+          toast.error("Please select a goal");
+          return;
+        }
+        const res = await updateGoalProgress(
+          selectedGoal,
+          amount,
+          form.account
+        );
+        toast.success(res.data.message || "Added to goal!");
+        fetchData();
+      } else if (transactionMode === "debt") {
+        // Debt transaction
+        if (!selectedPerson) {
+          toast.error("Please select a person");
+          return;
+        }
+        await addDebtTransaction(selectedPerson, {
+          type: debtType,
+          amount: amount,
+          description: form.description,
+          accountId: form.account || null,
+        });
+        toast.success("Debt transaction added!");
+        fetchData();
       } else {
-        await createTransaction(data);
-        toast.success("Transaction added!");
+        // Normal transaction
+        const data = {
+          ...form,
+          amount: amount,
+          // Use current date/time if not specified
+          date: form.date || new Date().toISOString(),
+        };
+
+        if (editingTx) {
+          await updateTransaction(editingTx._id, data);
+          toast.success("Transaction updated!");
+          fetchData();
+        } else {
+          await createTransaction(data);
+          toast.success("Transaction added!");
+          setPage(1);
+          if (page === 1) fetchData();
+        }
       }
       handleCloseDialog();
-      fetchInitialData();
     } catch (error) {
       toast.error(error.response?.data?.message || "Error saving transaction");
     }
@@ -239,7 +296,7 @@ const TransactionsPage = () => {
       try {
         await deleteTransaction(id);
         toast.success("Transaction deleted!");
-        setTransactions((prev) => prev.filter((tx) => tx._id !== id));
+        fetchData(); // Refetch to update pagination correctly
       } catch (error) {
         toast.error(
           error.response?.data?.message || "Error deleting transaction"
@@ -273,13 +330,12 @@ const TransactionsPage = () => {
   };
 
   // Transaction Card Component
-  const TransactionCard = ({ tx, isLast }) => {
+  const TransactionCard = ({ tx }) => {
     const color = getCategoryColor(tx.category);
     const isIncome = tx.type === "income";
 
     return (
       <Card
-        ref={isLast ? lastTransactionRef : null}
         sx={{
           mb: 2,
           background: isDark
@@ -457,7 +513,7 @@ const TransactionsPage = () => {
             Transactions
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {transactions.length} transactions loaded
+            {totalCount} transactions total
           </Typography>
         </Box>
         <Button
@@ -478,6 +534,169 @@ const TransactionsPage = () => {
         </Button>
       </Box>
 
+      {/* Category Summary Card - Current Month Only */}
+      {!loading &&
+        transactions.length > 0 &&
+        (() => {
+          // Get current month boundaries
+          const now = new Date();
+          const currentMonthStart = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1
+          );
+          const currentMonthEnd = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0,
+            23,
+            59,
+            59
+          );
+          const monthName = now.toLocaleDateString("en-IN", {
+            month: "long",
+            year: "numeric",
+          });
+
+          // Calculate spending by category from current month transactions (only expenses)
+          const categorySummary = transactions
+            .filter((tx) => {
+              const txDate = new Date(tx.date);
+              return (
+                tx.type === "expense" &&
+                txDate >= currentMonthStart &&
+                txDate <= currentMonthEnd
+              );
+            })
+            .reduce((acc, tx) => {
+              const category = tx.category || "Other";
+              acc[category] = (acc[category] || 0) + tx.amount;
+              return acc;
+            }, {});
+
+          const sortedCategories = Object.entries(categorySummary).sort(
+            (a, b) => b[1] - a[1]
+          );
+
+          const totalSpent = sortedCategories.reduce(
+            (sum, [, amount]) => sum + amount,
+            0
+          );
+
+          if (sortedCategories.length === 0) return null;
+
+          return (
+            <Card
+              sx={{
+                mb: 3,
+                background: isDark
+                  ? `linear-gradient(135deg, ${alpha(
+                      "#8b5cf6",
+                      0.15
+                    )} 0%, ${alpha("#6366f1", 0.08)} 100%)`
+                  : `linear-gradient(135deg, ${alpha(
+                      "#8b5cf6",
+                      0.1
+                    )} 0%, ${alpha("#6366f1", 0.05)} 100%)`,
+                borderLeft: `4px solid #8b5cf6`,
+              }}
+            >
+              <CardContent>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    mb: 2,
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha("#8b5cf6", 0.2),
+                      color: "#8b5cf6",
+                      width: 40,
+                      height: 40,
+                    }}
+                  >
+                    <CategoryIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Spending by Category
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {monthName} • Total: ₹{totalSpent.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Grid container spacing={2}>
+                  {sortedCategories.map(([category, amount]) => {
+                    const color = getCategoryColor(category);
+                    return (
+                      <Grid item xs={6} sm={4} md={3} key={category}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: isDark
+                              ? alpha(color, 0.15)
+                              : alpha(color, 0.1),
+                            border: `1px solid ${alpha(color, 0.3)}`,
+                            transition: "transform 0.2s, box-shadow 0.2s",
+                            "&:hover": {
+                              transform: "translateY(-2px)",
+                              boxShadow: `0 4px 12px ${alpha(color, 0.25)}`,
+                            },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              mb: 1,
+                            }}
+                          >
+                            <Avatar
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                bgcolor: color,
+                                fontSize: "0.75rem",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {category.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: 600,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                color: isDark ? "#ffffff" : "text.primary",
+                              }}
+                            >
+                              {category}
+                            </Typography>
+                          </Box>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 700, color: color }}
+                          >
+                            ₹{amount.toLocaleString()}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
       {/* Filters */}
       <Card
         sx={{
@@ -492,6 +711,27 @@ const TransactionsPage = () => {
               flexWrap: "wrap",
               gap: 2,
               alignItems: "center",
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: isDark
+                    ? alpha("#ffffff", 0.3)
+                    : alpha("#000000", 0.23),
+                },
+                "&:hover fieldset": {
+                  borderColor: isDark
+                    ? alpha("#ffffff", 0.5)
+                    : alpha("#000000", 0.4),
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: isDark ? "#10b981" : "#059669",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: isDark ? alpha("#ffffff", 0.7) : "text.secondary",
+              },
+              "& .MuiSelect-icon": {
+                color: isDark ? alpha("#ffffff", 0.7) : "inherit",
+              },
             }}
           >
             <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -581,7 +821,14 @@ const TransactionsPage = () => {
                   endDate: "",
                 })
               }
-              sx={{ borderRadius: 2 }}
+              sx={{
+                borderRadius: 2,
+                borderColor: isDark ? alpha("#ffffff", 0.3) : undefined,
+                color: isDark ? alpha("#ffffff", 0.7) : undefined,
+                "&:hover": {
+                  borderColor: isDark ? alpha("#ffffff", 0.5) : undefined,
+                },
+              }}
             >
               Clear
             </Button>
@@ -607,30 +854,54 @@ const TransactionsPage = () => {
         </Card>
       ) : (
         <>
-          {transactions.map((tx, index) => (
-            <TransactionCard
-              key={tx._id}
-              tx={tx}
-              isLast={index === transactions.length - 1}
-            />
+          {transactions.map((tx) => (
+            <TransactionCard key={tx._id} tx={tx} />
           ))}
 
-          {/* Loading More Indicator */}
-          {loadingMore && (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
-              <CircularProgress size={32} />
-            </Box>
-          )}
-
-          {/* End of List */}
-          {!hasMore && transactions.length > 0 && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ textAlign: "center", py: 3 }}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 2,
+                py: 3,
+                mt: 2,
+              }}
             >
-              You've reached the end
-            </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Showing {(page - 1) * limit + 1} -{" "}
+                {Math.min(page * limit, totalCount)} of {totalCount}
+              </Typography>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                size="large"
+                sx={{
+                  "& .MuiPaginationItem-root": {
+                    color: isDark ? "#ffffff" : "text.primary",
+                    borderColor: isDark ? alpha("#ffffff", 0.3) : undefined,
+                    "&.Mui-selected": {
+                      background:
+                        "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                      color: "#ffffff",
+                      "&:hover": {
+                        background:
+                          "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                      },
+                    },
+                    "&:hover": {
+                      bgcolor: isDark
+                        ? alpha("#ffffff", 0.1)
+                        : alpha("#000000", 0.04),
+                    },
+                  },
+                }}
+              />
+            </Box>
           )}
         </>
       )}
@@ -655,6 +926,39 @@ const TransactionsPage = () => {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+            {/* Transaction Mode Selector - Only show for new transactions */}
+            {!editingTx && (
+              <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                <Chip
+                  icon={<AccountBalanceWallet />}
+                  label="Normal"
+                  onClick={() => setTransactionMode("normal")}
+                  color={transactionMode === "normal" ? "primary" : "default"}
+                  variant={transactionMode === "normal" ? "filled" : "outlined"}
+                  sx={{ flex: 1, py: 2.5 }}
+                />
+                <Chip
+                  icon={<Flag />}
+                  label="Goal"
+                  onClick={() => setTransactionMode("goal")}
+                  color={transactionMode === "goal" ? "primary" : "default"}
+                  variant={transactionMode === "goal" ? "filled" : "outlined"}
+                  sx={{ flex: 1, py: 2.5 }}
+                  disabled={goals.length === 0}
+                />
+                <Chip
+                  icon={<Person />}
+                  label="Debt"
+                  onClick={() => setTransactionMode("debt")}
+                  color={transactionMode === "debt" ? "primary" : "default"}
+                  variant={transactionMode === "debt" ? "filled" : "outlined"}
+                  sx={{ flex: 1, py: 2.5 }}
+                  disabled={debtPersons.length === 0}
+                />
+              </Box>
+            )}
+
+            {/* Account Selector - Common for all modes */}
             <FormControl fullWidth>
               <InputLabel>Account</InputLabel>
               <Select
@@ -669,80 +973,218 @@ const TransactionsPage = () => {
                 ))}
               </Select>
             </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={form.type}
-                label="Type"
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-              >
-                <MenuItem value="expense">Expense</MenuItem>
-                <MenuItem value="income">Income</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Amount"
-              type="number"
-              value={form.amount}
-              onChange={(e) => {
-                const value = e.target.value;
-                setForm({ ...form, amount: value });
-                setAmountError(validateAmount(value));
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">₹</InputAdornment>
-                ),
-              }}
-              error={!!amountError}
-              helperText={amountError}
-            />
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={form.category}
-                label="Category"
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-              >
-                {categories
-                  .filter((cat) =>
-                    form.type === "income"
-                      ? cat.type !== "expense"
-                      : cat.type !== "income"
-                  )
-                  .map((cat) => (
-                    <MenuItem key={cat._id} value={cat.name}>
-                      {cat.name}
+
+            {/* NORMAL MODE FIELDS */}
+            {transactionMode === "normal" && (
+              <>
+                <FormControl fullWidth>
+                  <InputLabel>Type</InputLabel>
+                  <Select
+                    value={form.type}
+                    label="Type"
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                  >
+                    <MenuItem value="expense">Expense</MenuItem>
+                    <MenuItem value="income">Income</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Amount"
+                  type="number"
+                  value={form.amount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setForm({ ...form, amount: value });
+                    setAmountError(validateAmount(value));
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">₹</InputAdornment>
+                    ),
+                  }}
+                  error={!!amountError}
+                  helperText={amountError}
+                />
+                <FormControl fullWidth>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={form.category}
+                    label="Category"
+                    onChange={(e) =>
+                      setForm({ ...form, category: e.target.value })
+                    }
+                  >
+                    {categories
+                      .filter((cat) =>
+                        form.type === "income"
+                          ? cat.type !== "expense"
+                          : cat.type !== "income"
+                      )
+                      .map((cat) => (
+                        <MenuItem key={cat._id} value={cat.name}>
+                          {cat.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Payee"
+                  value={form.payee}
+                  onChange={(e) => setForm({ ...form, payee: e.target.value })}
+                  placeholder="Who did you pay or receive from?"
+                />
+                <TextField
+                  fullWidth
+                  label="Description"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  multiline
+                  rows={2}
+                />
+                <TextField
+                  fullWidth
+                  type="datetime-local"
+                  label="Date & Time"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </>
+            )}
+
+            {/* GOAL MODE FIELDS */}
+            {transactionMode === "goal" && (
+              <>
+                <FormControl fullWidth>
+                  <InputLabel>Select Goal</InputLabel>
+                  <Select
+                    value={selectedGoal}
+                    label="Select Goal"
+                    onChange={(e) => setSelectedGoal(e.target.value)}
+                  >
+                    {goals.map((goal) => (
+                      <MenuItem key={goal._id} value={goal._id}>
+                        {goal.name} (₹
+                        {(goal.currentAmount || 0).toLocaleString()} / ₹
+                        {goal.targetAmount.toLocaleString()})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Amount to Add"
+                  type="number"
+                  value={form.amount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setForm({ ...form, amount: value });
+                    setAmountError(validateAmount(value));
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">₹</InputAdornment>
+                    ),
+                  }}
+                  error={!!amountError}
+                  helperText={
+                    amountError ||
+                    (selectedGoal
+                      ? `Remaining: ₹${(
+                          (goals.find((g) => g._id === selectedGoal)
+                            ?.targetAmount || 0) -
+                          (goals.find((g) => g._id === selectedGoal)
+                            ?.currentAmount || 0)
+                        ).toLocaleString()}`
+                      : "Select a goal first")
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Description (Optional)"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  placeholder="Notes about this contribution"
+                />
+              </>
+            )}
+
+            {/* DEBT MODE FIELDS */}
+            {transactionMode === "debt" && (
+              <>
+                <FormControl fullWidth>
+                  <InputLabel>Select Person</InputLabel>
+                  <Select
+                    value={selectedPerson}
+                    label="Select Person"
+                    onChange={(e) => setSelectedPerson(e.target.value)}
+                  >
+                    {debtPersons.map((person) => (
+                      <MenuItem key={person._id} value={person._id}>
+                        {person.name} (Balance: ₹
+                        {Math.abs(person.balance || 0).toLocaleString()}{" "}
+                        {person.balance > 0
+                          ? "they owe"
+                          : person.balance < 0
+                          ? "you owe"
+                          : "settled"}
+                        )
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel>Transaction Type</InputLabel>
+                  <Select
+                    value={debtType}
+                    label="Transaction Type"
+                    onChange={(e) => setDebtType(e.target.value)}
+                  >
+                    <MenuItem value="borrowed">
+                      I Borrowed (They gave me)
                     </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Payee"
-              value={form.payee}
-              onChange={(e) => setForm({ ...form, payee: e.target.value })}
-              placeholder="Who did you pay or receive from?"
-            />
-            <TextField
-              fullWidth
-              label="Description"
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              multiline
-              rows={2}
-            />
-            <TextField
-              fullWidth
-              type="datetime-local"
-              label="Date & Time"
-              value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-            />
+                    <MenuItem value="lent">I Lent (I gave them)</MenuItem>
+                    <MenuItem value="repaid">I Repaid (Paying back)</MenuItem>
+                    <MenuItem value="received">
+                      I Received (They paid back)
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Amount"
+                  type="number"
+                  value={form.amount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setForm({ ...form, amount: value });
+                    setAmountError(validateAmount(value));
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">₹</InputAdornment>
+                    ),
+                  }}
+                  error={!!amountError}
+                  helperText={amountError}
+                />
+                <TextField
+                  fullWidth
+                  label="Description (Optional)"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  placeholder="What was this for?"
+                />
+              </>
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -750,7 +1192,7 @@ const TransactionsPage = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!isFormValid}
+            disabled={!isFormValid()}
             sx={{
               borderRadius: 2,
               background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",

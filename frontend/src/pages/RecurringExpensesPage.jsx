@@ -356,13 +356,6 @@ const RecurringExpensesPage = () => {
                     >
                       <Edit fontSize="small" />
                     </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDelete(expense._id)}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
                   </Box>
                 </CardContent>
               </Card>

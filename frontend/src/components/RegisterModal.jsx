@@ -142,7 +142,8 @@ const RegisterModal = ({ open, onClose, onSwitchToLogin }) => {
       slotProps={{
         backdrop: {
           sx: {
-            backgroundColor: "transparent",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(4px)",
           },
         },
       }}

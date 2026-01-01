@@ -146,6 +146,23 @@ const updateProgress = async (req, res) => {
         .json({ success: false, message: "Goal not found" });
     }
 
+    // Check if goal is already completed
+    if (goal.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "This goal is already completed. You cannot add more funds.",
+      });
+    }
+
+    // Check if amount would exceed target
+    const remainingAmount = goal.targetAmount - (goal.currentAmount || 0);
+    if (amount > remainingAmount) {
+      return res.status(400).json({
+        success: false,
+        message: `Amount exceeds remaining goal. You only need ₹${remainingAmount.toLocaleString()} more to reach your target of ₹${goal.targetAmount.toLocaleString()}.`,
+      });
+    }
+
     // Use provided accountId or goal's default account
     const targetAccountId = accountId || goal.account;
     let transaction = null;

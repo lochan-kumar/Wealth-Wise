@@ -88,8 +88,7 @@ const ProfilePage = () => {
   // Export form
   const [exportForm, setExportForm] = useState({
     format: "excel",
-    startDate: "",
-    endDate: "",
+    dateRange: "all",
   });
 
   // Custom Report form
@@ -137,8 +136,49 @@ const ProfilePage = () => {
     setLoading(true);
     try {
       const params = {};
-      if (exportForm.startDate) params.startDate = exportForm.startDate;
-      if (exportForm.endDate) params.endDate = exportForm.endDate;
+      const now = new Date();
+
+      // Calculate date range based on selection
+      switch (exportForm.dateRange) {
+        case "lastWeek":
+          params.startDate = new Date(
+            now.getTime() - 7 * 24 * 60 * 60 * 1000
+          ).toISOString();
+          params.endDate = now.toISOString();
+          break;
+        case "lastMonth":
+          params.startDate = new Date(
+            now.getFullYear(),
+            now.getMonth() - 1,
+            now.getDate()
+          ).toISOString();
+          params.endDate = now.toISOString();
+          break;
+        case "last3Months":
+          params.startDate = new Date(
+            now.getFullYear(),
+            now.getMonth() - 3,
+            now.getDate()
+          ).toISOString();
+          params.endDate = now.toISOString();
+          break;
+        case "last6Months":
+          params.startDate = new Date(
+            now.getFullYear(),
+            now.getMonth() - 6,
+            now.getDate()
+          ).toISOString();
+          params.endDate = now.toISOString();
+          break;
+        case "thisYear":
+          params.startDate = new Date(now.getFullYear(), 0, 1).toISOString();
+          params.endDate = now.toISOString();
+          break;
+        case "all":
+        default:
+          // No date filter - export all
+          break;
+      }
 
       let response;
       let filename;
@@ -424,34 +464,29 @@ const ProfilePage = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="From Date (Optional)"
-                    value={exportForm.startDate}
-                    onChange={(e) =>
-                      setExportForm({
-                        ...exportForm,
-                        startDate: e.target.value,
-                      })
-                    }
-                    InputLabelProps={{ shrink: true }}
-                  />
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Date Range</InputLabel>
+                    <Select
+                      value={exportForm.dateRange}
+                      label="Date Range"
+                      onChange={(e) =>
+                        setExportForm({
+                          ...exportForm,
+                          dateRange: e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value="all">All Transactions</MenuItem>
+                      <MenuItem value="lastWeek">Last 1 Week</MenuItem>
+                      <MenuItem value="lastMonth">Last 1 Month</MenuItem>
+                      <MenuItem value="last3Months">Last 3 Months</MenuItem>
+                      <MenuItem value="last6Months">Last 6 Months</MenuItem>
+                      <MenuItem value="thisYear">This Year</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="To Date (Optional)"
-                    value={exportForm.endDate}
-                    onChange={(e) =>
-                      setExportForm({ ...exportForm, endDate: e.target.value })
-                    }
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Button
                     fullWidth
                     variant="contained"
@@ -467,8 +502,8 @@ const ProfilePage = () => {
                 </Grid>
               </Grid>
               <Alert severity="info" sx={{ mt: 2 }}>
-                Leave dates empty to export all transactions. The file will
-                download automatically.
+                Select a date range to filter your export. Choose "All
+                Transactions" to export everything.
               </Alert>
             </CardContent>
           </Card>
