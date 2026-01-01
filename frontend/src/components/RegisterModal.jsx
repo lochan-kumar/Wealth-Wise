@@ -10,7 +10,6 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  alpha,
   useTheme,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
@@ -150,15 +149,15 @@ const RegisterModal = ({ open, onClose, onSwitchToLogin }) => {
       PaperProps={{
         sx: {
           borderRadius: 4,
-          background: isDark
-            ? "rgba(15, 23, 42, 0.5)"
-            : "rgba(255, 255, 255, 0.1)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
+          background: isDark ? "rgba(15, 23, 42, 0.95)" : "#ffffff",
+          backdropFilter: isDark ? "blur(12px)" : "none",
+          WebkitBackdropFilter: isDark ? "blur(12px)" : "none",
           border: `1px solid ${
             isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"
           }`,
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          boxShadow: isDark
+            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+            : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
         },
       }}
     >

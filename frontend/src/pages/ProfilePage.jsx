@@ -36,7 +36,6 @@ import {
   updatePassword,
   exportToExcel,
   exportToPDF,
-  deleteAllTransactions,
   generateSpendingReport,
 } from "../services/api";
 import { useToast } from "../context/ToastContext";
@@ -45,8 +44,6 @@ const ProfilePage = () => {
   const { user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [confirmText, setConfirmText] = useState("");
 
   // Password form
   const [passwordForm, setPasswordForm] = useState({
@@ -274,25 +271,6 @@ const ProfilePage = () => {
       toast.error(error.response?.data?.message || "Error generating report");
     } finally {
       setReportLoading(false);
-    }
-  };
-
-  const handleClearAllData = async () => {
-    if (confirmText !== "DELETE") {
-      toast.error("Please type DELETE to confirm");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await deleteAllTransactions();
-      toast.success(res.data.message || "All transactions deleted!");
-      setConfirmDialogOpen(false);
-      setConfirmText("");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error clearing data");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -637,95 +615,7 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
         </Grid>
-
-        {/* Danger Zone */}
-        <Grid size={{ xs: 12 }}>
-          <Card
-            sx={{
-              borderColor: "error.main",
-              borderWidth: 2,
-              borderStyle: "solid",
-            }}
-          >
-            <CardContent>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
-              >
-                <Warning color="error" />
-                <Typography variant="h6" color="error">
-                  Danger Zone
-                </Typography>
-              </Box>
-              <Alert severity="error" sx={{ mb: 2 }}>
-                <strong>Warning:</strong> This action is irreversible. All your
-                transactions will be permanently deleted.
-              </Alert>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<DeleteForever />}
-                onClick={() => setConfirmDialogOpen(true)}
-              >
-                Clear All Transactions
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
       </Grid>
-
-      {/* Confirm Delete Dialog */}
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-      >
-        <DialogTitle
-          sx={{
-            color: "error.main",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <Warning /> Confirm Deletion
-        </DialogTitle>
-        <DialogContent>
-          <Typography sx={{ mb: 2 }}>
-            This will permanently delete <strong>ALL</strong> your transactions
-            and reset all budget tracking.
-          </Typography>
-          <Typography sx={{ mb: 2 }}>
-            Type <strong>DELETE</strong> to confirm:
-          </Typography>
-          <TextField
-            fullWidth
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            placeholder="Type DELETE"
-            autoFocus
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button
-            onClick={() => {
-              setConfirmDialogOpen(false);
-              setConfirmText("");
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleClearAllData}
-            disabled={loading || confirmText !== "DELETE"}
-            startIcon={
-              loading ? <CircularProgress size={20} /> : <DeleteForever />
-            }
-          >
-            Delete All
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

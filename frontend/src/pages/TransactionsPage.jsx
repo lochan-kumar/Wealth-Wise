@@ -92,13 +92,14 @@ const TransactionsPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const limit = 10;
+  const [limit, setLimit] = useState(10);
 
   // Filters
   const [filters, setFilters] = useState({
     type: "",
     category: "",
     account: "",
+    dateRange: "",
     startDate: "",
     endDate: "",
   });
@@ -142,7 +143,7 @@ const TransactionsPage = () => {
 
   useEffect(() => {
     fetchData();
-  }, [filters, page]);
+  }, [filters, page, limit]);
 
   useEffect(() => {
     // Fetch accounts, categories, goals, and debt persons only once on mount
@@ -785,29 +786,82 @@ const TransactionsPage = () => {
               </Select>
             </FormControl>
 
-            <TextField
-              size="small"
-              type="date"
-              label="From"
-              InputLabelProps={{ shrink: true }}
-              value={filters.startDate}
-              onChange={(e) =>
-                setFilters({ ...filters, startDate: e.target.value })
-              }
-              sx={{ width: 150 }}
-            />
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Date Range</InputLabel>
+              <Select
+                value={filters.dateRange || ""}
+                label="Date Range"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const now = new Date();
+                  let startDate = "";
+                  let endDate = now.toISOString().split("T")[0];
 
-            <TextField
-              size="small"
-              type="date"
-              label="To"
-              InputLabelProps={{ shrink: true }}
-              value={filters.endDate}
-              onChange={(e) =>
-                setFilters({ ...filters, endDate: e.target.value })
-              }
-              sx={{ width: 150 }}
-            />
+                  switch (value) {
+                    case "lastWeek":
+                      startDate = new Date(
+                        now.getTime() - 7 * 24 * 60 * 60 * 1000
+                      )
+                        .toISOString()
+                        .split("T")[0];
+                      break;
+                    case "lastMonth":
+                      startDate = new Date(
+                        now.getFullYear(),
+                        now.getMonth() - 1,
+                        now.getDate()
+                      )
+                        .toISOString()
+                        .split("T")[0];
+                      break;
+                    case "last3Months":
+                      startDate = new Date(
+                        now.getFullYear(),
+                        now.getMonth() - 3,
+                        now.getDate()
+                      )
+                        .toISOString()
+                        .split("T")[0];
+                      break;
+                    case "last6Months":
+                      startDate = new Date(
+                        now.getFullYear(),
+                        now.getMonth() - 6,
+                        now.getDate()
+                      )
+                        .toISOString()
+                        .split("T")[0];
+                      break;
+                    case "lastYear":
+                      startDate = new Date(
+                        now.getFullYear() - 1,
+                        now.getMonth(),
+                        now.getDate()
+                      )
+                        .toISOString()
+                        .split("T")[0];
+                      break;
+                    default:
+                      startDate = "";
+                      endDate = "";
+                  }
+
+                  setFilters({
+                    ...filters,
+                    dateRange: value,
+                    startDate,
+                    endDate,
+                  });
+                }}
+              >
+                <MenuItem value="">All Time</MenuItem>
+                <MenuItem value="lastWeek">Last Week</MenuItem>
+                <MenuItem value="lastMonth">Last Month</MenuItem>
+                <MenuItem value="last3Months">Last 3 Months</MenuItem>
+                <MenuItem value="last6Months">Last 6 Months</MenuItem>
+                <MenuItem value="lastYear">Last Year</MenuItem>
+              </Select>
+            </FormControl>
 
             <Button
               variant="outlined"
@@ -817,6 +871,7 @@ const TransactionsPage = () => {
                   type: "",
                   category: "",
                   account: "",
+                  dateRange: "",
                   startDate: "",
                   endDate: "",
                 })
@@ -859,7 +914,7 @@ const TransactionsPage = () => {
           ))}
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalPages > 0 && (
             <Box
               sx={{
                 display: "flex",
@@ -868,39 +923,66 @@ const TransactionsPage = () => {
                 gap: 2,
                 py: 3,
                 mt: 2,
+                flexWrap: "wrap",
               }}
             >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Show
+                </Typography>
+                <Select
+                  size="small"
+                  value={limit}
+                  onChange={(e) => {
+                    setLimit(e.target.value);
+                    setPage(1);
+                  }}
+                  sx={{ minWidth: 70 }}
+                >
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={25}>25</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                  <MenuItem value={100}>100</MenuItem>
+                </Select>
+                <Typography variant="body2" color="text.secondary">
+                  per page
+                </Typography>
+              </Box>
+
               <Typography variant="body2" color="text.secondary">
                 Showing {(page - 1) * limit + 1} -{" "}
                 {Math.min(page * limit, totalCount)} of {totalCount}
               </Typography>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
-                sx={{
-                  "& .MuiPaginationItem-root": {
-                    color: isDark ? "#ffffff" : "text.primary",
-                    borderColor: isDark ? alpha("#ffffff", 0.3) : undefined,
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                      color: "#ffffff",
-                      "&:hover": {
+
+              {totalPages > 1 && (
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                  size="large"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      color: isDark ? "#ffffff" : "text.primary",
+                      borderColor: isDark ? alpha("#ffffff", 0.3) : undefined,
+                      "&.Mui-selected": {
                         background:
-                          "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                          "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        color: "#ffffff",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                        },
+                      },
+                      "&:hover": {
+                        bgcolor: isDark
+                          ? alpha("#ffffff", 0.1)
+                          : alpha("#000000", 0.04),
                       },
                     },
-                    "&:hover": {
-                      bgcolor: isDark
-                        ? alpha("#ffffff", 0.1)
-                        : alpha("#000000", 0.04),
-                    },
-                  },
-                }}
-              />
+                  }}
+                />
+              )}
             </Box>
           )}
         </>
@@ -1145,14 +1227,67 @@ const TransactionsPage = () => {
                     value={debtType}
                     label="Transaction Type"
                     onChange={(e) => setDebtType(e.target.value)}
+                    renderValue={(value) => {
+                      const options = {
+                        borrowed: "I Borrowed",
+                        lent: "I Lent",
+                        repaid: "I Repaid",
+                        received: "I Received",
+                      };
+                      return options[value] || value;
+                    }}
                   >
                     <MenuItem value="borrowed">
-                      I Borrowed (They gave me)
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        <ArrowDownward sx={{ color: "#ef4444" }} />
+                        <Box>
+                          <Typography fontWeight={600}>I Borrowed</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            You took money from them
+                          </Typography>
+                        </Box>
+                      </Box>
                     </MenuItem>
-                    <MenuItem value="lent">I Lent (I gave them)</MenuItem>
-                    <MenuItem value="repaid">I Repaid (Paying back)</MenuItem>
+                    <MenuItem value="lent">
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        <ArrowUpward sx={{ color: "#10b981" }} />
+                        <Box>
+                          <Typography fontWeight={600}>I Lent</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            You gave money to them
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="repaid">
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        <ArrowUpward sx={{ color: "#10b981" }} />
+                        <Box>
+                          <Typography fontWeight={600}>I Repaid</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            You paid back what you owed
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </MenuItem>
                     <MenuItem value="received">
-                      I Received (They paid back)
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        <ArrowDownward sx={{ color: "#ef4444" }} />
+                        <Box>
+                          <Typography fontWeight={600}>I Received</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            They paid back what they owed
+                          </Typography>
+                        </Box>
+                      </Box>
                     </MenuItem>
                   </Select>
                 </FormControl>
