@@ -113,3 +113,40 @@ export const generateSpendingReport = (params) =>
     params,
     responseType: "blob",
   });
+
+// Notifications
+export const getNotifications = () => axios.get(`${API_URL}/notifications`);
+export const getUnreadNotificationCount = () =>
+  axios.get(`${API_URL}/notifications/unread-count`);
+export const markNotificationRead = (id) =>
+  axios.put(`${API_URL}/notifications/${id}/read`);
+export const markAllNotificationsRead = () =>
+  axios.put(`${API_URL}/notifications/read-all`);
+export const deleteNotification = (id) =>
+  axios.delete(`${API_URL}/notifications/${id}`);
+
+// Split Groups
+export const getSplitGroups = () => axios.get(`${API_URL}/split-groups`);
+export const getPendingGroupInvites = () =>
+  axios.get(`${API_URL}/split-groups/invites`);
+export const searchUsersForInvite = (email) =>
+  axios.get(`${API_URL}/split-groups/search-users`, { params: { email } });
+export const createSplitGroup = (data) =>
+  axios.post(`${API_URL}/split-groups`, data);
+export const getSplitGroup = (id) => axios.get(`${API_URL}/split-groups/${id}`);
+export const updateSplitGroup = (id, data) =>
+  axios.put(`${API_URL}/split-groups/${id}`, data);
+export const deleteSplitGroup = (id) =>
+  axios.delete(`${API_URL}/split-groups/${id}`);
+export const inviteToGroup = (groupId, email) =>
+  axios.post(`${API_URL}/split-groups/${groupId}/invite`, { email });
+export const respondToGroupInvite = (groupId, accept) =>
+  axios.put(`${API_URL}/split-groups/${groupId}/respond`, { accept });
+export const leaveGroup = (groupId) =>
+  axios.delete(`${API_URL}/split-groups/${groupId}/leave`);
+export const addGroupExpense = (groupId, data) =>
+  axios.post(`${API_URL}/split-groups/${groupId}/expense`, data);
+export const deleteGroupExpense = (groupId, expenseId) =>
+  axios.delete(`${API_URL}/split-groups/${groupId}/expense/${expenseId}`);
+export const settleWithGroupMember = (groupId, memberId, amount) =>
+  axios.post(`${API_URL}/split-groups/${groupId}/settle`, { memberId, amount });

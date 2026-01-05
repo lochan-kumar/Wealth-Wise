@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
 
@@ -17,6 +18,7 @@ import GoalsPage from "./pages/GoalsPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecurringExpensesPage from "./pages/RecurringExpensesPage";
 import DebtsPage from "./pages/DebtsPage";
+import SplitGroupsPage from "./pages/SplitGroupsPage";
 
 function App() {
   return (
@@ -35,7 +37,9 @@ function App() {
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout />
+                    <NotificationProvider>
+                      <DashboardLayout />
+                    </NotificationProvider>
                   </ProtectedRoute>
                 }
               >
@@ -46,6 +50,7 @@ function App() {
                 <Route path="goals" element={<GoalsPage />} />
                 <Route path="recurring" element={<RecurringExpensesPage />} />
                 <Route path="debts" element={<DebtsPage />} />
+                <Route path="split-groups" element={<SplitGroupsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
               </Route>
 

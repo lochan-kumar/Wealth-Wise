@@ -43,13 +43,15 @@ app.use("/api/debts", require("./routes/debts"));
 app.use("/api/changelog", require("./routes/changelog"));
 app.use("/api/categories", require("./routes/categories"));
 app.use("/api/bank", require("./routes/bank"));
+app.use("/api/notifications", require("./routes/notifications"));
+app.use("/api/split-groups", require("./routes/splitGroups"));
 
 // Welcome route
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Welcome to WealthWise API v2.1",
-    version: "2.1.0",
+    message: "Welcome to WealthWise API v2.2",
+    version: "2.2.0",
     features: [
       "Income & Expense tracking",
       "Multiple bank accounts",
@@ -60,6 +62,8 @@ app.get("/", (req, res) => {
       "Recurring expenses",
       "Debt tracking",
       "Change tracking for sync",
+      "Splitwise-like group expense sharing",
+      "In-app notifications",
     ],
     documentation: "/api-docs",
   });

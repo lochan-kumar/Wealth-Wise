@@ -47,6 +47,26 @@ import {
 import { useToast } from "../context/ToastContext";
 import AddTransactionDialog from "../components/AddTransactionDialog";
 
+// Transaction types for debt display
+const transactionTypes = [
+  { value: "lent", label: "Lent", icon: <ArrowUpward color="success" /> },
+  {
+    value: "borrowed",
+    label: "Borrowed",
+    icon: <ArrowDownward color="error" />,
+  },
+  {
+    value: "lent_repaid",
+    label: "Lent Repaid",
+    icon: <ArrowDownward color="success" />,
+  },
+  {
+    value: "borrowed_repaid",
+    label: "Borrowed Repaid",
+    icon: <ArrowUpward color="error" />,
+  },
+];
+
 const DebtsPage = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -432,7 +452,10 @@ const DebtsPage = () => {
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={
-                                    <Typography variant="body2">
+                                    <Typography
+                                      variant="body2"
+                                      component="span"
+                                    >
                                       {getTransactionLabel(tx.type)}: ₹
                                       {tx.amount.toLocaleString()}
                                       {tx.linkedTransaction && (

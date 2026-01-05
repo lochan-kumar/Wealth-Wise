@@ -37,10 +37,12 @@ import {
   Handshake,
   ChevronLeft,
   ChevronRight,
+  Groups,
 } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { useThemeMode } from "../context/ThemeContext";
 import AddTransactionDialog from "./AddTransactionDialog";
+import NotificationDropdown from "./NotificationDropdown";
 
 const drawerWidthExpanded = 260;
 const drawerWidthCollapsed = 72;
@@ -84,10 +86,10 @@ const menuItems = [
     color: "#f97316",
   },
   {
-    text: "Profile",
-    icon: <Person />,
-    path: "/dashboard/profile",
-    color: "#6366f1",
+    text: "Split Groups",
+    icon: <Groups />,
+    path: "/dashboard/split-groups",
+    color: "#06b6d4",
   },
 ];
 
@@ -150,7 +152,10 @@ const DashboardLayout = () => {
       }}
     >
       <Toolbar
-        sx={{ justifyContent: sidebarCollapsed ? "center" : "flex-start" }}
+        sx={{
+          justifyContent: sidebarCollapsed ? "center" : "flex-start",
+          px: sidebarCollapsed ? 1 : 2,
+        }}
       >
         <Box
           sx={{
@@ -167,22 +172,24 @@ const DashboardLayout = () => {
         >
           <Box
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 1.5,
+              width: sidebarCollapsed ? 40 : 32,
+              height: sidebarCollapsed ? 40 : 32,
+              borderRadius: sidebarCollapsed ? 2 : 1.5,
               background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4)",
+              transition: "all 0.3s ease-in-out",
             }}
           >
             <svg
-              width="24"
-              height="24"
+              width={sidebarCollapsed ? "28" : "24"}
+              height={sidebarCollapsed ? "28" : "24"}
               viewBox="0 0 512 512"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              style={{ transition: "all 0.3s ease-in-out" }}
             >
               <path
                 d="M256 128L360 216L256 400L152 216L256 128Z"
@@ -225,7 +232,17 @@ const DashboardLayout = () => {
           borderWidth: 1.5,
         }}
       />
-      <List sx={{ flex: 1, px: sidebarCollapsed ? 1 : 2, py: 1 }}>
+      <List
+        sx={{
+          flex: 1,
+          px: sidebarCollapsed ? 1 : 2,
+          py: 1,
+          overflow: "auto",
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
+          msOverflowStyle: "none",
+        }}
+      >
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
@@ -524,7 +541,8 @@ const DashboardLayout = () => {
               {menuItems.find((item) => item.path === location.pathname)
                 ?.text || "Dashboard"}
             </Typography>
-            <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
+            <NotificationDropdown />
+            <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, ml: 1 }}>
               <Avatar
                 sx={{
                   bgcolor: "transparent",
