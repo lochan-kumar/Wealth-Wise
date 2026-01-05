@@ -25,6 +25,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Divider,
+  useTheme,
 } from "@mui/material";
 import {
   Add,
@@ -44,6 +45,9 @@ import {
 import { useToast } from "../context/ToastContext";
 
 const AccountsPage = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const [accounts, setAccounts] = useState([]);
   const [banks, setBanks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -307,8 +311,16 @@ const AccountsPage = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: isDark
+              ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+              : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+          },
+        }}
       >
-        <DialogTitle>Link Bank Account</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Link Bank Account</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             <FormControl fullWidth>
@@ -350,6 +362,10 @@ const AccountsPage = () => {
             variant="contained"
             onClick={handleSubmit}
             disabled={!isFormValid}
+            sx={{
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            }}
           >
             Link Account
           </Button>
@@ -362,8 +378,16 @@ const AccountsPage = () => {
         onClose={handleCloseCashDialog}
         maxWidth="xs"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: isDark
+              ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+              : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+          },
+        }}
       >
-        <DialogTitle>Set Cash Balance</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Set Cash Balance</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <TextField
@@ -385,7 +409,14 @@ const AccountsPage = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={handleCloseCashDialog}>Cancel</Button>
-          <Button variant="contained" onClick={handleUpdateCashBalance}>
+          <Button
+            variant="contained"
+            onClick={handleUpdateCashBalance}
+            sx={{
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            }}
+          >
             Update Balance
           </Button>
         </DialogActions>

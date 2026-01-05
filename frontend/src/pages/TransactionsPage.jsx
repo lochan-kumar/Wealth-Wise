@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Card,
@@ -71,6 +72,7 @@ const categoryColors = {
 const TransactionsPage = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+  const location = useLocation();
 
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
@@ -144,6 +146,23 @@ const TransactionsPage = () => {
   useEffect(() => {
     fetchData();
   }, [filters, page, limit]);
+
+  // Open dialog if navigated from FAB or Debts page
+  useEffect(() => {
+    if (location.state?.openDialog) {
+      // Set transaction mode if specified (e.g., "debt" from Debts page)
+      if (location.state.mode) {
+        setTransactionMode(location.state.mode);
+      }
+      // Pre-select person if navigating from Debts page
+      if (location.state.personId) {
+        setSelectedPerson(location.state.personId);
+      }
+      handleOpenDialog();
+      // Clear the state to prevent reopening on re-render
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     // Fetch accounts, categories, goals, and debt persons only once on mount
@@ -219,7 +238,7 @@ const TransactionsPage = () => {
         category: "Other",
         payee: "",
         description: "",
-        date: new Date().toISOString().split("T")[0],
+        date: getISTDateTime(),
       });
       setSelectedGoal("");
       setSelectedPerson("");
@@ -247,7 +266,8 @@ const TransactionsPage = () => {
         const res = await updateGoalProgress(
           selectedGoal,
           amount,
-          form.account
+          form.account,
+          form.date || new Date().toISOString()
         );
         toast.success(res.data.message || "Added to goal!");
         fetchData();
@@ -262,6 +282,7 @@ const TransactionsPage = () => {
           amount: amount,
           description: form.description,
           accountId: form.account || null,
+          date: form.date || new Date().toISOString(),
         });
         toast.success("Debt transaction added!");
         fetchData();
@@ -1194,6 +1215,14 @@ const TransactionsPage = () => {
                   }
                   placeholder="Notes about this contribution"
                 />
+                <TextField
+                  fullWidth
+                  type="datetime-local"
+                  label="Date & Time"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
+                />
               </>
             )}
 
@@ -1317,6 +1346,14 @@ const TransactionsPage = () => {
                     setForm({ ...form, description: e.target.value })
                   }
                   placeholder="What was this for?"
+                />
+                <TextField
+                  fullWidth
+                  type="datetime-local"
+                  label="Date & Time"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
                 />
               </>
             )}

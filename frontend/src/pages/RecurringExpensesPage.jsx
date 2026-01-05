@@ -20,6 +20,7 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
+  useTheme,
 } from "@mui/material";
 import { Add, Edit, Delete, Repeat, PlayArrow } from "@mui/icons-material";
 import {
@@ -36,6 +37,9 @@ import { useToast } from "../context/ToastContext";
 // Categories are fetched from API
 
 const RecurringExpensesPage = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const [expenses, setExpenses] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -370,8 +374,16 @@ const RecurringExpensesPage = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: isDark
+              ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+              : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+          },
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>
           {editingExpense ? "Edit Recurring Expense" : "Add Recurring Expense"}
         </DialogTitle>
         <DialogContent>
@@ -475,6 +487,10 @@ const RecurringExpensesPage = () => {
             variant="contained"
             onClick={handleSubmit}
             disabled={!isFormValid()}
+            sx={{
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            }}
           >
             {editingExpense ? "Update" : "Create"}
           </Button>

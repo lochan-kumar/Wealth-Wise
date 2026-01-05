@@ -14,10 +14,6 @@ import {
   IconButton,
   Chip,
   InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Divider,
   List,
   ListItem,
@@ -25,7 +21,7 @@ import {
   ListItemIcon,
   Avatar,
   Collapse,
-  Alert,
+  useTheme,
 } from "@mui/material";
 import {
   Add,
@@ -45,54 +41,30 @@ import {
   getDebtSummary,
   createDebtPerson,
   updateDebtPerson,
-  addDebtTransaction,
   deleteDebtTransaction,
   deleteDebtPerson,
-  getAccounts,
 } from "../services/api";
 import { useToast } from "../context/ToastContext";
-
-const transactionTypes = [
-  {
-    value: "borrowed",
-    label: "I Borrowed",
-    icon: <ArrowDownward color="error" />,
-    description: "You took money from them",
-  },
-  {
-    value: "lent",
-    label: "I Lent",
-    icon: <ArrowUpward color="success" />,
-    description: "You gave money to them",
-  },
-  {
-    value: "repaid",
-    label: "I Repaid",
-    icon: <ArrowUpward color="primary" />,
-    description: "You paid back what you owed",
-  },
-  {
-    value: "received",
-    label: "I Received",
-    icon: <ArrowDownward color="primary" />,
-    description: "They paid back what they owed",
-  },
-];
+import AddTransactionDialog from "../components/AddTransactionDialog";
 
 const DebtsPage = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const [persons, setPersons] = useState([]);
-  const [accounts, setAccounts] = useState([]);
   const [summary, setSummary] = useState({
     theyOwe: { count: 0, total: 0 },
     youOwe: { count: 0, total: 0 },
   });
   const [loading, setLoading] = useState(true);
   const [personDialogOpen, setPersonDialogOpen] = useState(false);
-  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState(null);
-  const [selectedPerson, setSelectedPerson] = useState(null);
   const [expandedPerson, setExpandedPerson] = useState(null);
   const toast = useToast();
+
+  // Add Transaction Dialog state
+  const [addTxDialogOpen, setAddTxDialogOpen] = useState(false);
+  const [addTxPersonId, setAddTxPersonId] = useState("");
 
   const [personForm, setPersonForm] = useState({
     name: "",
@@ -100,19 +72,11 @@ const DebtsPage = () => {
     notes: "",
   });
 
-  const [transactionForm, setTransactionForm] = useState({
-    type: "borrowed",
-    amount: "",
-    description: "",
-    accountId: "",
-  });
-
   // Validation errors
   const [personErrors, setPersonErrors] = useState({
     name: "",
     phone: "",
   });
-  const [txAmountError, setTxAmountError] = useState("");
 
   // Validation functions
   const validatePersonName = (value) => {
@@ -127,16 +91,9 @@ const DebtsPage = () => {
     return "";
   };
 
-  const validateTxAmount = (value) => {
-    const num = parseFloat(value);
-    if (value && (isNaN(num) || num < 0)) return "Amount cannot be negative";
-    return "";
-  };
-
   // Form validity checks
   const isPersonFormValid =
     personForm.name && !personErrors.name && !personErrors.phone;
-  const isTxFormValid = transactionForm.amount && !txAmountError;
 
   useEffect(() => {
     fetchData();
@@ -144,14 +101,12 @@ const DebtsPage = () => {
 
   const fetchData = async () => {
     try {
-      const [personsRes, summaryRes, accountsRes] = await Promise.all([
+      const [personsRes, summaryRes] = await Promise.all([
         getDebtPersons(),
         getDebtSummary(),
-        getAccounts(),
       ]);
       setPersons(personsRes.data.data);
       setSummary(summaryRes.data.data);
-      setAccounts(accountsRes.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -175,14 +130,9 @@ const DebtsPage = () => {
   };
 
   const handleOpenTransactionDialog = (person) => {
-    setSelectedPerson(person);
-    setTransactionForm({
-      type: "borrowed",
-      amount: "",
-      description: "",
-      accountId: accounts.length > 0 ? accounts[0]._id : "",
-    });
-    setTransactionDialogOpen(true);
+    // Open the unified AddTransactionDialog with debt mode and person pre-selected
+    setAddTxPersonId(person._id);
+    setAddTxDialogOpen(true);
   };
 
   const handleSavePerson = async () => {
@@ -198,22 +148,6 @@ const DebtsPage = () => {
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || "Error saving person");
-    }
-  };
-
-  const handleAddTransaction = async () => {
-    try {
-      await addDebtTransaction(selectedPerson._id, {
-        type: transactionForm.type,
-        amount: parseFloat(transactionForm.amount),
-        description: transactionForm.description,
-        accountId: transactionForm.accountId || null,
-      });
-      toast.success("Transaction added!");
-      setTransactionDialogOpen(false);
-      fetchData();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error adding transaction");
     }
   };
 
@@ -537,8 +471,16 @@ const DebtsPage = () => {
         onClose={() => setPersonDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: isDark
+              ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+              : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+          },
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>
           {editingPerson ? "Edit Person" : "Add Person"}
         </DialogTitle>
         <DialogContent>
@@ -594,123 +536,24 @@ const DebtsPage = () => {
             variant="contained"
             onClick={handleSavePerson}
             disabled={!isPersonFormValid}
+            sx={{
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            }}
           >
             {editingPerson ? "Update" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Add Transaction Dialog */}
-      <Dialog
-        open={transactionDialogOpen}
-        onClose={() => setTransactionDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Add Transaction with {selectedPerson?.name}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Transaction Type</InputLabel>
-              <Select
-                value={transactionForm.type}
-                label="Transaction Type"
-                onChange={(e) =>
-                  setTransactionForm({
-                    ...transactionForm,
-                    type: e.target.value,
-                  })
-                }
-              >
-                {transactionTypes.map((t) => (
-                  <MenuItem key={t.value} value={t.value}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      {t.icon}
-                      <Box>
-                        <Typography>{t.label}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {t.description}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Amount"
-              type="number"
-              value={transactionForm.amount}
-              onChange={(e) => {
-                const value = e.target.value;
-                setTransactionForm({
-                  ...transactionForm,
-                  amount: value,
-                });
-                setTxAmountError(validateTxAmount(value));
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">₹</InputAdornment>
-                ),
-              }}
-              error={!!txAmountError}
-              helperText={txAmountError}
-            />
-            <TextField
-              fullWidth
-              label="Description (Optional)"
-              value={transactionForm.description}
-              onChange={(e) =>
-                setTransactionForm({
-                  ...transactionForm,
-                  description: e.target.value,
-                })
-              }
-              placeholder="What was this for?"
-            />
-            <FormControl fullWidth>
-              <InputLabel>Link to Account (Optional)</InputLabel>
-              <Select
-                value={transactionForm.accountId}
-                label="Link to Account (Optional)"
-                onChange={(e) =>
-                  setTransactionForm({
-                    ...transactionForm,
-                    accountId: e.target.value,
-                  })
-                }
-              >
-                <MenuItem value="">
-                  <em>Don't link to main transactions</em>
-                </MenuItem>
-                {accounts.map((acc) => (
-                  <MenuItem key={acc._id} value={acc._id}>
-                    {acc.name} (₹{acc.balance?.toLocaleString() || 0})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Alert severity="info">
-              If you link to an account, this will also appear in your main
-              Transactions and update the account balance.
-            </Alert>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setTransactionDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAddTransaction}
-            disabled={!isTxFormValid}
-          >
-            Add Transaction
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Unified Add Transaction Dialog */}
+      <AddTransactionDialog
+        open={addTxDialogOpen}
+        onClose={() => setAddTxDialogOpen(false)}
+        onSuccess={fetchData}
+        initialMode="debt"
+        initialPersonId={addTxPersonId}
+      />
     </Box>
   );
 };

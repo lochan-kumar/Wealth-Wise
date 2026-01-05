@@ -15,34 +15,26 @@ import {
   IconButton,
   Chip,
   InputAdornment,
-  Alert,
-  Snackbar,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  useTheme,
 } from "@mui/material";
 import { Add, Edit, Delete, Flag, CheckCircle } from "@mui/icons-material";
-import {
-  getGoals,
-  createGoal,
-  updateGoal,
-  updateGoalProgress,
-  deleteGoal,
-  getAccounts,
-} from "../services/api";
+import { getGoals, createGoal, updateGoal, deleteGoal } from "../services/api";
 import { useToast } from "../context/ToastContext";
+import AddTransactionDialog from "../components/AddTransactionDialog";
 
 const GoalsPage = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const [goals, setGoals] = useState([]);
-  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
-  const [progressAmount, setProgressAmount] = useState("");
-  const [progressAccount, setProgressAccount] = useState("");
   const toast = useToast();
+
+  // Add Progress Dialog state (unified dialog)
+  const [addTxDialogOpen, setAddTxDialogOpen] = useState(false);
+  const [addTxGoalId, setAddTxGoalId] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -58,7 +50,6 @@ const GoalsPage = () => {
     targetAmount: "",
     deadline: "",
   });
-  const [progressError, setProgressError] = useState("");
 
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
@@ -91,19 +82,6 @@ const GoalsPage = () => {
     return "";
   };
 
-  const validateProgressAmount = (value, goal) => {
-    const num = parseFloat(value);
-    if (value && (isNaN(num) || num <= 0))
-      return "Amount must be greater than 0";
-    if (goal && value) {
-      const remaining = goal.targetAmount - (goal.currentAmount || 0);
-      if (num > remaining) {
-        return `Amount exceeds remaining goal. You only need ₹${remaining.toLocaleString()} more.`;
-      }
-    }
-    return "";
-  };
-
   // Check if form is valid
   const isFormValid = () => {
     return (
@@ -115,23 +93,14 @@ const GoalsPage = () => {
     );
   };
 
-  // Check if progress form is valid
-  const isProgressValid = () => {
-    return progressAmount && !progressError;
-  };
-
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const [goalsRes, accountsRes] = await Promise.all([
-        getGoals(),
-        getAccounts(),
-      ]);
+      const goalsRes = await getGoals();
       setGoals(goalsRes.data.data);
-      setAccounts(accountsRes.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -203,28 +172,9 @@ const GoalsPage = () => {
   };
 
   const handleOpenProgressDialog = (goal) => {
-    setEditingGoal(goal);
-    setProgressAmount("");
-    // Default to goal's account or first account
-    setProgressAccount(
-      goal.account?._id || (accounts.length > 0 ? accounts[0]._id : "")
-    );
-    setProgressDialogOpen(true);
-  };
-
-  const handleAddProgress = async () => {
-    try {
-      const res = await updateGoalProgress(
-        editingGoal._id,
-        parseFloat(progressAmount),
-        progressAccount || null
-      );
-      toast.success(res.data.message || "Progress updated!");
-      setProgressDialogOpen(false);
-      fetchGoals();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error updating progress");
-    }
+    // Open the unified AddTransactionDialog with goal mode and goal pre-selected
+    setAddTxGoalId(goal._id);
+    setAddTxDialogOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -365,6 +315,13 @@ const GoalsPage = () => {
                     >
                       <Edit fontSize="small" />
                     </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDelete(goal._id)}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
                   </Box>
                 </CardContent>
               </Card>
@@ -379,8 +336,18 @@ const GoalsPage = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: isDark
+              ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+              : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+          },
+        }}
       >
-        <DialogTitle>{editingGoal ? "Edit Goal" : "Create Goal"}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          {editingGoal ? "Edit Goal" : "Create Goal"}
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
@@ -453,82 +420,24 @@ const GoalsPage = () => {
             variant="contained"
             onClick={handleSubmit}
             disabled={!isFormValid()}
+            sx={{
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            }}
           >
             {editingGoal ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Add Progress Dialog */}
-      <Dialog
-        open={progressDialogOpen}
-        onClose={() => setProgressDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Add Progress to Goal</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              fullWidth
-              label="Amount to Add"
-              type="number"
-              value={progressAmount}
-              onChange={(e) => {
-                const value = e.target.value;
-                setProgressAmount(value);
-                setProgressError(validateProgressAmount(value, editingGoal));
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">₹</InputAdornment>
-                ),
-              }}
-              error={!!progressError}
-              helperText={
-                progressError ||
-                (editingGoal
-                  ? `Remaining: ₹${(
-                      editingGoal.targetAmount -
-                      (editingGoal.currentAmount || 0)
-                    ).toLocaleString()}`
-                  : "")
-              }
-            />
-            <FormControl fullWidth>
-              <InputLabel>Deduct from Account</InputLabel>
-              <Select
-                value={progressAccount}
-                label="Deduct from Account"
-                onChange={(e) => setProgressAccount(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>Don't create expense record</em>
-                </MenuItem>
-                {accounts.map((acc) => (
-                  <MenuItem key={acc._id} value={acc._id}>
-                    {acc.name} (₹{acc.balance?.toLocaleString() || 0})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Alert severity="info" sx={{ mt: 1 }}>
-              If you select an account, an expense record will be created and
-              the amount will be deducted from the account balance.
-            </Alert>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setProgressDialogOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleAddProgress}
-            disabled={!isProgressValid()}
-          >
-            Add Progress
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Unified Add Transaction Dialog for Goal Progress */}
+      <AddTransactionDialog
+        open={addTxDialogOpen}
+        onClose={() => setAddTxDialogOpen(false)}
+        onSuccess={fetchGoals}
+        initialMode="goal"
+        initialGoalId={addTxGoalId}
+      />
     </Box>
   );
 };

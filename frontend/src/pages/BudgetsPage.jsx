@@ -25,6 +25,7 @@ import {
   Switch,
   FormControlLabel,
   Avatar,
+  useTheme,
 } from "@mui/material";
 import {
   Add,
@@ -101,12 +102,16 @@ const getCategoryIcon = (categoryName) => {
 };
 
 const BudgetsPage = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const [categories, setCategories] = useState([]);
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(1); // Default to "With Budget" tab
+  const [dialogMode, setDialogMode] = useState("category"); // "category" or "budget"
   const toast = useToast();
 
   const [form, setForm] = useState({
@@ -116,6 +121,7 @@ const BudgetsPage = () => {
     type: "expense",
     hasLimit: false,
   });
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
 
   // Validation errors
   const [formErrors, setFormErrors] = useState({
@@ -166,9 +172,11 @@ const BudgetsPage = () => {
     }
   };
 
-  const handleOpenDialog = (category = null) => {
+  const handleOpenDialog = (category = null, mode = "category") => {
+    setDialogMode(mode);
     if (category) {
       setEditingCategory(category);
+      setSelectedCategoryId(category._id);
       setForm({
         name: category.name,
         color: category.color || "#6366f1",
@@ -178,15 +186,31 @@ const BudgetsPage = () => {
       });
     } else {
       setEditingCategory(null);
+      setSelectedCategoryId("");
       setForm({
         name: "",
         color: "#6366f1",
         budgetLimit: "",
         type: "expense",
-        hasLimit: false,
+        hasLimit: mode === "budget",
       });
     }
     setDialogOpen(true);
+  };
+
+  const handleCategorySelect = (categoryId) => {
+    const cat = categories.find((c) => c._id === categoryId);
+    if (cat) {
+      setSelectedCategoryId(categoryId);
+      setEditingCategory(cat);
+      setForm({
+        name: cat.name,
+        color: cat.color || "#6366f1",
+        budgetLimit: cat.budgetLimit?.toString() || "",
+        type: cat.type || "expense",
+        hasLimit: true,
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -277,13 +301,22 @@ const BudgetsPage = () => {
             {totalBudget > 0 && ` / ₹${totalBudget.toLocaleString()} budgeted`}
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => handleOpenDialog()}
-        >
-          Add Category
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<Add />}
+            onClick={() => handleOpenDialog(null, "category")}
+          >
+            Add Category
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => handleOpenDialog(null, "budget")}
+          >
+            Set Budget
+          </Button>
+        </Box>
       </Box>
 
       {/* Tabs */}
@@ -450,77 +483,139 @@ const BudgetsPage = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: isDark
+              ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+              : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+          },
+        }}
       >
-        <DialogTitle>
-          {editingCategory ? "Edit Category" : "Add Category"}
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          {dialogMode === "budget"
+            ? "Set Budget"
+            : editingCategory
+            ? "Edit Category"
+            : "Add Category"}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              fullWidth
-              label="Category Name"
-              value={form.name}
-              onChange={(e) => {
-                const value = e.target.value;
-                setForm({ ...form, name: value });
-                setFormErrors({ ...formErrors, name: validateName(value) });
-              }}
-              placeholder="e.g., Groceries, Rent, Subscriptions"
-              disabled={editingCategory?.name === "Other"}
-              error={!!formErrors.name}
-              helperText={formErrors.name}
-            />
+            {/* Budget mode: Show category dropdown */}
+            {dialogMode === "budget" && !editingCategory ? (
+              <FormControl fullWidth>
+                <InputLabel>Select Category</InputLabel>
+                <Select
+                  value={selectedCategoryId}
+                  label="Select Category"
+                  onChange={(e) => handleCategorySelect(e.target.value)}
+                >
+                  {categories
+                    .filter((cat) => cat.type !== "income") // Only expense categories can have budgets
+                    .map((cat) => (
+                      <MenuItem key={cat._id} value={cat._id}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Box
+                            sx={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: "50%",
+                              bgcolor: cat.color,
+                            }}
+                          />
+                          {cat.name}
+                          {cat.budgetLimit && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ ml: 1 }}
+                            >
+                              (Current: ₹{cat.budgetLimit.toLocaleString()})
+                            </Typography>
+                          )}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            ) : (
+              /* Category mode or editing: Show text field */
+              <TextField
+                fullWidth
+                label="Category Name"
+                value={form.name}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setForm({ ...form, name: value });
+                  setFormErrors({ ...formErrors, name: validateName(value) });
+                }}
+                placeholder="e.g., Groceries, Rent, Subscriptions"
+                disabled={editingCategory?.name === "Other"}
+                error={!!formErrors.name}
+                helperText={formErrors.name}
+              />
+            )}
 
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Color
-              </Typography>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                {colorOptions.map((color) => (
-                  <Box
-                    key={color}
-                    onClick={() => setForm({ ...form, color })}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 1,
-                      bgcolor: color,
-                      cursor: "pointer",
-                      border: form.color === color ? "3px solid white" : "none",
-                      boxShadow:
-                        form.color === color ? `0 0 0 2px ${color}` : "none",
-                    }}
-                  />
-                ))}
-              </Box>
-            </Box>
+            {/* Only show color/type options in category mode */}
+            {dialogMode === "category" && (
+              <>
+                <Box>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    Color
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                    {colorOptions.map((color) => (
+                      <Box
+                        key={color}
+                        onClick={() => setForm({ ...form, color })}
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 1,
+                          bgcolor: color,
+                          cursor: "pointer",
+                          border:
+                            form.color === color ? "3px solid white" : "none",
+                          boxShadow:
+                            form.color === color
+                              ? `0 0 0 2px ${color}`
+                              : "none",
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
 
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={form.type}
-                label="Type"
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-              >
-                <MenuItem value="expense">Expense Category</MenuItem>
-                <MenuItem value="income">Income Category</MenuItem>
-                <MenuItem value="both">Both (Income & Expense)</MenuItem>
-              </Select>
-            </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel>Type</InputLabel>
+                  <Select
+                    value={form.type}
+                    label="Type"
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                  >
+                    <MenuItem value="expense">Expense Category</MenuItem>
+                    <MenuItem value="income">Income Category</MenuItem>
+                    <MenuItem value="both">Both (Income & Expense)</MenuItem>
+                  </Select>
+                </FormControl>
 
-            <Divider />
+                <Divider />
 
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.hasLimit}
-                  onChange={(e) =>
-                    setForm({ ...form, hasLimit: e.target.checked })
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={form.hasLimit}
+                      onChange={(e) =>
+                        setForm({ ...form, hasLimit: e.target.checked })
+                      }
+                    />
                   }
+                  label="Set a monthly budget limit"
                 />
-              }
-              label="Set a monthly budget limit"
-            />
+              </>
+            )}
 
             {form.hasLimit && (
               <TextField
@@ -556,6 +651,10 @@ const BudgetsPage = () => {
             variant="contained"
             onClick={handleSubmit}
             disabled={!isFormValid()}
+            sx={{
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            }}
           >
             {editingCategory ? "Update" : "Create"}
           </Button>

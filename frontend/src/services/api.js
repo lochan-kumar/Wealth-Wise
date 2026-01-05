@@ -49,8 +49,8 @@ export const getGoals = () => axios.get(`${API_URL}/goals`);
 export const createGoal = (data) => axios.post(`${API_URL}/goals`, data);
 export const updateGoal = (id, data) =>
   axios.put(`${API_URL}/goals/${id}`, data);
-export const updateGoalProgress = (id, amount, accountId) =>
-  axios.put(`${API_URL}/goals/${id}/progress`, { amount, accountId });
+export const updateGoalProgress = (id, amount, accountId, date) =>
+  axios.put(`${API_URL}/goals/${id}/progress`, { amount, accountId, date });
 export const deleteGoal = (id) => axios.delete(`${API_URL}/goals/${id}`);
 
 // Recurring Expenses

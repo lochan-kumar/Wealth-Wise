@@ -113,9 +113,17 @@ const updateGoal = async (req, res) => {
       runValidators: true,
     }).populate("account", "name type bankName");
 
-    // Auto-update status if target reached
+    // Auto-update status based on progress vs target
     if (goal.currentAmount >= goal.targetAmount && goal.status === "active") {
+      // Target reached - mark as completed
       goal.status = "completed";
+      await goal.save();
+    } else if (
+      goal.currentAmount < goal.targetAmount &&
+      goal.status === "completed"
+    ) {
+      // Target was increased and current is now less - revert to active
+      goal.status = "active";
       await goal.save();
     }
 
@@ -198,7 +206,7 @@ const updateProgress = async (req, res) => {
         description: `Savings towards goal: ${goal.name}`,
         category: "Goals",
         payee: `Goal: ${goal.name}`,
-        date: new Date(),
+        date: req.body.date ? new Date(req.body.date) : new Date(),
         source: "manual",
       });
 

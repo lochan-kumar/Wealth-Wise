@@ -19,16 +19,6 @@ import {
   useTheme,
   useMediaQuery,
   Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  InputAdornment,
   alpha,
 } from "@mui/material";
 import {
@@ -50,25 +40,10 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { useThemeMode } from "../context/ThemeContext";
-import { createTransaction, getAccounts } from "../services/api";
-import { useToast } from "../context/ToastContext";
-import { getISTDateTime } from "../utils/dateUtils";
+import AddTransactionDialog from "./AddTransactionDialog";
 
 const drawerWidthExpanded = 260;
 const drawerWidthCollapsed = 72;
-
-const categories = [
-  "Food",
-  "Transport",
-  "Shopping",
-  "Bills",
-  "Entertainment",
-  "Health",
-  "Education",
-  "Salary",
-  "Investment",
-  "Other",
-];
 
 const menuItems = [
   {
@@ -141,64 +116,11 @@ const DashboardLayout = () => {
     ? drawerWidthCollapsed
     : drawerWidthExpanded;
 
-  // Quick Add Dialog State
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [accounts, setAccounts] = useState([]);
-  const toast = useToast();
-  const [form, setForm] = useState({
-    account: "",
-    type: "expense",
-    amount: "",
-    category: "Other",
-    payee: "",
-    description: "",
-    date: getISTDateTime(),
-  });
-
   // Hide FAB on transactions page
   const showFab = location.pathname !== "/dashboard/transactions";
 
-  useEffect(() => {
-    if (dialogOpen && accounts.length === 0) {
-      fetchAccounts();
-    }
-  }, [dialogOpen]);
-
-  const fetchAccounts = async () => {
-    try {
-      const res = await getAccounts();
-      setAccounts(res.data.data);
-      if (res.data.data.length > 0) {
-        const defaultAcc =
-          res.data.data.find((a) => a.isDefault) || res.data.data[0];
-        setForm((prev) => ({ ...prev, account: defaultAcc._id }));
-      }
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-    }
-  };
-
-  const handleQuickAdd = async () => {
-    try {
-      await createTransaction({
-        ...form,
-        amount: parseFloat(form.amount),
-      });
-      toast.success("Transaction added!");
-      setDialogOpen(false);
-      setForm((prev) => ({
-        ...prev,
-        amount: "",
-        payee: "",
-        description: "",
-        date: getISTDateTime(),
-      }));
-      // Trigger a page refresh by navigating to current location
-      window.location.reload();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error adding transaction");
-    }
-  };
+  // Add Transaction Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -717,7 +639,7 @@ const DashboardLayout = () => {
           <Outlet />
         </Box>
 
-        {/* Global FAB for Quick Add - hidden on Transactions page */}
+        {/* Global FAB for Quick Add */}
         {showFab && (
           <Fab
             color="primary"
@@ -729,128 +651,12 @@ const DashboardLayout = () => {
           </Fab>
         )}
 
-        {/* Quick Add Dialog */}
-        <Dialog
+        {/* Add Transaction Dialog */}
+        <AddTransactionDialog
           open={dialogOpen}
           onClose={() => setDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Quick Add Transaction</DialogTitle>
-          <DialogContent>
-            <Box
-              sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}
-            >
-              <FormControl fullWidth>
-                <InputLabel>Account</InputLabel>
-                <Select
-                  value={form.account}
-                  label="Account"
-                  onChange={(e) =>
-                    setForm({ ...form, account: e.target.value })
-                  }
-                >
-                  {accounts.map((acc) => (
-                    <MenuItem key={acc._id} value={acc._id}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          width: "100%",
-                        }}
-                      >
-                        <span>{acc.name}</span>
-                        <span
-                          style={{
-                            color: acc.balance >= 0 ? "#16a34a" : "#dc2626",
-                            fontWeight: 600,
-                          }}
-                        >
-                          ₹{(acc.balance || 0).toLocaleString()}
-                        </span>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel>Type</InputLabel>
-                <Select
-                  value={form.type}
-                  label="Type"
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
-                >
-                  <MenuItem value="expense">Expense</MenuItem>
-                  <MenuItem value="income">Income</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                fullWidth
-                label="Amount"
-                type="number"
-                value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">₹</InputAdornment>
-                  ),
-                }}
-              />
-              <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={form.category}
-                  label="Category"
-                  onChange={(e) =>
-                    setForm({ ...form, category: e.target.value })
-                  }
-                >
-                  {categories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField
-                fullWidth
-                label="Payee"
-                value={form.payee}
-                onChange={(e) => setForm({ ...form, payee: e.target.value })}
-                placeholder="Who did you pay or receive from?"
-              />
-              <TextField
-                fullWidth
-                label="Description (Optional)"
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                placeholder="Add notes about this transaction"
-                multiline
-                rows={2}
-              />
-              <TextField
-                fullWidth
-                label="Date & Time"
-                type="datetime-local"
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Box>
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button
-              variant="contained"
-              onClick={handleQuickAdd}
-              disabled={!form.amount || !form.account}
-            >
-              Add Transaction
-            </Button>
-          </DialogActions>
-        </Dialog>
+          onSuccess={() => window.location.reload()}
+        />
       </Box>
     </Box>
   );
